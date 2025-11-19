@@ -1657,14 +1657,48 @@
             const { file, index } = queueItem;
             
             return new Promise((resolve, reject) => {
+                // Validate token
+                const token = getToken();
+                if (!token) {
+                    console.error('No token found');
+                    showToast('Vui lòng đăng nhập lại', 'error');
+                    setTimeout(() => {
+                        window.location.href = '../login.html?redirect=upload';
+                    }, 2000);
+                    reject(new Error('NO_TOKEN'));
+                    return;
+                }
+
+                // Validate required fields
+                const title = document.getElementById('docTitle').value.trim();
+                const subjectId = document.getElementById('docSubject').value;
+                
+                if (!title) {
+                    showToast('Vui lòng nhập tiêu đề', 'error');
+                    reject(new Error('MISSING_TITLE'));
+                    return;
+                }
+                
+                if (!subjectId || subjectId === '' || subjectId === '0') {
+                    showToast('Vui lòng chọn môn học', 'error');
+                    reject(new Error('MISSING_SUBJECT'));
+                    return;
+                }
+
                 const formData = new FormData();
                 formData.append('file', file);
                 
                 // Add metadata - using backend field names
-                formData.append('tieu_de', document.getElementById('docTitle').value);
-                formData.append('mo_ta', document.getElementById('docDescription').value);
-                formData.append('ma_danh_muc', document.getElementById('docCategory').value);
-                formData.append('ma_mon_hoc', document.getElementById('docSubject').value);
+                formData.append('tieu_de', title);
+                formData.append('mo_ta', document.getElementById('docDescription').value.trim());
+                formData.append('ma_danh_muc', document.getElementById('docCategory').value || '');
+                formData.append('ma_mon_hoc', subjectId);
+
+                console.log('Upload data:', {
+                    tieu_de: title,
+                    ma_mon_hoc: subjectId,
+                    file: file.name
+                });
 
                 const xhr = new XMLHttpRequest();
                 
@@ -1679,19 +1713,37 @@
 
                 // Success
                 xhr.addEventListener('load', () => {
+                    console.log('Upload response:', xhr.status, xhr.responseText);
+                    
                     if (xhr.status === 200 || xhr.status === 201) {
                         queueItem.status = 'completed';
                         updateFileProgress(index, 100);
-                        resolve(JSON.parse(xhr.response));
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            console.log('Upload success:', response);
+                            resolve(response);
+                        } catch (e) {
+                            console.error('Failed to parse response:', e);
+                            resolve({ success: true });
+                        }
                     } else {
                         queueItem.status = 'failed';
+                        console.error('Upload failed:', xhr.status, xhr.responseText);
+                        try {
+                            const error = JSON.parse(xhr.responseText);
+                            showToast(error.message || 'Upload thất bại', 'error');
+                        } catch (e) {
+                            showToast('Upload thất bại: ' + xhr.status, 'error');
+                        }
                         reject(new Error('UPLOAD_FAILED'));
                     }
                 });
 
                 // Error
-                xhr.addEventListener('error', () => {
+                xhr.addEventListener('error', (e) => {
                     queueItem.status = 'failed';
+                    console.error('Network error:', e);
+                    showToast('Không thể kết nối đến server. Vui lòng kiểm tra server có đang chạy không.', 'error');
                     reject(new Error('NETWORK_ERROR'));
                 });
 
@@ -1702,6 +1754,8 @@
 
                 // Upload to real API endpoint
                 const uploadUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`;
+                console.log('Upload URL:', uploadUrl);
+                console.log('Token:', token ? 'Present' : 'Missing');
                 
                 // DEVELOPMENT: Uncomment below to simulate upload
                 // simulateFileUpload(index).then(resolve).catch(reject);
@@ -1709,7 +1763,7 @@
 
                 // PRODUCTION CODE:
                 xhr.open('POST', uploadUrl);
-                xhr.setRequestHeader('Authorization', `Bearer ${getToken()}`);
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
                 xhr.send(formData);
             });
         }
