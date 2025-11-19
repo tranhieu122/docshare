@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tải lên tài liệu - DocShare">
+    <title>Tải lên tài liệu - DocShare</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <style>
+        /* Additional Upload Page Styles */
+        .upload-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .upload-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .upload-steps::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e9ecef;
+            z-index: 0;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #999;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step-item.completed .step-circle {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+
+        .step-label {
+            font-weight: 600;
+            color: #999;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .step-item.active .step-label {
+            color: #667eea;
+        }
+
+        .step-item.completed .step-label {
+            color: #27ae60;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #e9ecef;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: scale(1.02);
+        }
+
+        .upload-area.dragover {
+            border-style: solid;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .upload-text {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .upload-browse-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .file-requirements {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .requirements-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .requirements-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .requirement-icon {
+            color: #27ae60;
+            font-size: 1.1rem;
+        }
+
+        .files-preview {
+            margin-top: 30px;
+        }
+
+        .file-preview-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .file-preview-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .file-icon-preview {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .file-info-preview {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name-preview {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-size-preview {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .file-progress {
+            margin-top: 10px;
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .file-remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .file-remove-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .file-preview-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        .file-preview-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-field-full {
+            grid-column: 1 / -1;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: #f39c12;
+        }
+
+        .char-counter.danger {
+            color: #e74c3c;
+        }
+
+        .upload-tips {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px 25px;
+            border-radius: 12px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .tips-title {
+            font-weight: 700;
+            color: #1976D2;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips-list li {
+            padding: 8px 0;
+            color: #0d47a1;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .tips-list li::before {
+            content: '💡';
+            flex-shrink: 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-3px);
+        }
+
+        .success-animation {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .success-icon {
+            font-size: 6rem;
+            margin-bottom: 20px;
+            animation: bounceIn 0.6s ease;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-title {
+            font-size: 2rem;
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .uploaded-files-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .uploaded-file-item {
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Draft Indicator */
+        .draft-indicator {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #f39c12;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .draft-indicator.show {
+            opacity: 1;
+        }
+
+        /* Preview Modal */
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            overflow: auto;
+        }
+
+        .preview-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        .preview-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #e74c3c;
+            background: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .preview-close:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* Upload Queue Status */
+        .upload-queue-status {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .queue-item:last-child {
+            border-bottom: none;
+        }
+
+        .queue-status {
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        .queue-status.uploading {
+            background: #2196F3;
+            color: white;
+        }
+
+        .queue-status.completed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .queue-status.failed {
+            background: #f44336;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .upload-steps {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .upload-steps::before {
+                display: none;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-area {
+                padding: 40px 20px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .file-preview-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .upload-section {
+                padding: 25px 20px;
+            }
+
+            .draft-indicator {
+                top: 70px;
+                right: 10px;
+                font-size: 0.8rem;
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Đang tải lên...</p>
+        <button class="btn-danger" onclick="cancelUpload()" style="margin-top: 20px;">
+            Hủy tải lên
+        </button>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast">
+        <span id="toastMessage"></span>
+        <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Draft Indicator -->
+    <div id="draftIndicator" class="draft-indicator">
+        💾 Đã lưu bản nháp
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="preview-modal">
+        <div class="preview-content">
+            <button class="preview-close" onclick="closePreviewModal()">&times;</button>
+            <div id="previewContainer"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" style="text-decoration: none; color: inherit;">
+                    <h1>📚 DocShare</h1>
+                </a>
+                <span class="logo-subtitle">Học tập & Chia sẻ</span>
+            </div>
+            <nav class="nav">
+                <a href="../index.html" class="nav-link">
+                    <span class="nav-icon">🏠</span>
+                    Trang chủ
+                </a>
+                <a href="../documents/list.html" class="nav-link">
+                    <span class="nav-icon">🔍</span>
+                    Khám phá
+                </a>
+                <a href="../index.html#features" class="nav-link">
+                    <span class="nav-icon">✨</span>
+                    Tính năng
+                </a>
+                <a href="../index.html#about" class="nav-link">
+                    <span class="nav-icon">ℹ️</span>
+                    Về chúng tôi
+                </a>
+                <div class="nav-buttons" id="authButtons" style="display: none;">
+                    <a href="../login.html" class="btn-login">
+                        <span>🔑</span> Đăng nhập
+                    </a>
+                    <a href="../register.html" class="btn-register">
+                        <span>📝</span> Đăng ký
+                    </a>
+                </div>
+                <!-- User Dropdown (chỉ hiện khi đã đăng nhập) -->
+                <div class="nav-buttons" id="userSection">
+                    <a href="../admin/dashboard.html" id="adminLink" class="btn-danger" style="display: none;">
+                        <span>🔑</span> Quản trị
+                    </a>
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                            <span class="user-icon">👤</span>
+                            <span id="userNameHeader">Người dùng</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <span class="user-icon">👤</span>
+                                <span id="dropdownUserEmail" style="margin-left: 8px;">email@example.com</span>
+                            </div>
+                            <div class="dropdown-content-grid">
+                                <a href="./home.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📊</span>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="./my-documents.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📄</span>
+                                    <span>Tài liệu của tôi</span>
+                                </a>
+                                <a href="./upload.html" class="dropdown-item">
+                                    <span class="dropdown-icon">⬆️</span>
+                                    <span>Tải lên</span>
+                                </a>
+                                <a href="./profile.html" class="dropdown-item">
+                                    <span class="dropdown-icon">⚙️</span>
+                                    <span>Cài đặt</span>
+                                </a>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button onclick="logout()" class="dropdown-item dropdown-logout">
+                                <span class="dropdown-icon">🚪</span>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="dashboard">
+        <div class="container upload-container">
+            <!-- Page Header -->
+            <div class="dashboard-header">
+                <div>
+                    <h2>⬆️ Tải lên tài liệu</h2>
+                    <p style="opacity: 0.9; margin-top: 8px; font-size: 1.05rem;">Chia sẻ kiến thức của bạn với cộng đồng</p>
+                </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button onclick="loadDraft()" class="btn-cta-secondary" style="padding: 12px 25px; font-size: 1rem; background: rgba(255,255,255,0.2); border: 2px solid white;">
+                        <span>💾</span> Tải bản nháp
+                    </button>
+                    <a href="./my-documents.html" class="btn-cta-secondary" style="padding: 12px 25px; font-size: 1rem; background: rgba(255,255,255,0.2); border: 2px solid white;">
+                        <span>📄</span> Tài liệu của tôi
+                    </a>
+                </div>
+            </div>
+
+            <!-- Upload Steps -->
+            <div class="upload-steps">
+                <div class="step-item active" id="step1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Chọn file</div>
+                </div>
+                <div class="step-item" id="step2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Thông tin</div>
+                </div>
+                <div class="step-item" id="step3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Xác nhận</div>
+                </div>
+                <div class="step-item" id="step4">
+                    <div class="step-circle">✓</div>
+                    <div class="step-label">Hoàn thành</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Upload File -->
+            <div class="upload-section" id="uploadStep1">
+                <h3 class="section-title">
+                    <span>📁</span>
+                    Bước 1: Chọn tài liệu
+                </h3>
+
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Kéo thả file vào đây</div>
+                    <div class="upload-subtext">hoặc</div>
+                    <label class="upload-browse-btn">
+                        Chọn file từ máy tính
+                        <input type="file" class="file-input-hidden" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" multiple>
+                    </label>
+                </div>
+
+                <div class="file-requirements">
+                    <div class="requirements-title">
+                        <span>ℹ️</span>
+                        Yêu cầu file
+                    </div>
+                    <div class="requirements-list">
+                        <div class="requirement-item">
+                            <span class="requirement-icon">✓</span>
+                            <span>Định dạng: PDF, DOC, DOCX, PPT, PPTX</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="requirement-icon">✓</span>
+                            <span>Kích thước tối đa: 50MB</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="requirement-icon">✓</span>
+                            <span>Có thể tải nhiều file cùng lúc</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="requirement-icon">✓</span>
+                            <span>File phải rõ ràng, dễ đọc</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Files Preview -->
+                <div class="files-preview" id="filesPreview" style="display: none;">
+                    <h4 style="color: #2c3e50; margin-bottom: 20px; font-weight: 700;">
+                        📋 Danh sách file đã chọn (<span id="fileCount">0</span>)
+                    </h4>
+                    <div id="filesList"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="clearFiles()">
+                        <span>🗑️</span> Xóa tất cả
+                    </button>
+                    <button class="btn-primary" onclick="goToStep(2)" id="btnNextStep1" disabled>
+                        <span>→</span> Tiếp theo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Document Information -->
+            <div class="upload-section" id="uploadStep2" style="display: none;">
+                <h3 class="section-title">
+                    <span>📝</span>
+                    Bước 2: Thông tin tài liệu
+                </h3>
+
+                <form id="documentForm">
+                    <div class="form-grid">
+                        <div class="form-group form-field-full">
+                            <label for="docTitle">
+                                <span style="color: #667eea;">📌</span> Tiêu đề tài liệu *
+                            </label>
+                            <input 
+                                type="text" 
+                                id="docTitle" 
+                                required 
+                                placeholder="Nhập tiêu đề rõ ràng, dễ hiểu"
+                                maxlength="200"
+                                oninput="updateCharCount('docTitle', 'titleCount', 200); saveDraftAuto()"
+                            >
+                            <div class="char-counter" id="titleCount">0/200 ký tự</div>
+                        </div>
+
+                        <div class="form-group form-field-full">
+                            <label for="docDescription">
+                                <span style="color: #667eea;">📄</span> Mô tả tài liệu *
+                            </label>
+                            <textarea 
+                                id="docDescription" 
+                                required 
+                                rows="5"
+                                placeholder="Mô tả nội dung tài liệu, các chủ đề chính..."
+                                maxlength="1000"
+                                oninput="updateCharCount('docDescription', 'descCount', 1000); saveDraftAuto()"
+                            ></textarea>
+                            <div class="char-counter" id="descCount">0/1000 ký tự</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="docCategory">
+                                <span style="color: #667eea;">📚</span> Danh mục *
+                            </label>
+                            <select id="docCategory" required onchange="saveDraftAuto()">
+                                <option value="">Chọn danh mục</option>
+                                <option value="tech">🖥️ Công nghệ thông tin</option>
+                                <option value="science">🔬 Khoa học tự nhiên</option>
+                                <option value="business">💼 Kinh tế & Kinh doanh</option>
+                                <option value="language">🌐 Ngôn ngữ</option>
+                                <option value="social">📖 Khoa học xã hội</option>
+                                <option value="engineering">⚙️ Kỹ thuật</option>
+                                <option value="medicine">⚕️ Y dược</option>
+                                <option value="art">🎨 Nghệ thuật</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="docSubject">
+                                <span style="color: #667eea;">📖</span> Môn học
+                            </label>
+                            <input 
+                                type="text" 
+                                id="docSubject" 
+                                placeholder="VD: Toán cao cấp A1"
+                                oninput="saveDraftAuto()"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="docLevel">
+                                <span style="color: #667eea;">🎓</span> Trình độ
+                            </label>
+                            <select id="docLevel" onchange="saveDraftAuto()">
+                                <option value="">Chọn trình độ</option>
+                                <option value="beginner">Cơ bản</option>
+                                <option value="intermediate">Trung cấp</option>
+                                <option value="advanced">Nâng cao</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="docLanguage">
+                                <span style="color: #667eea;">🗣️</span> Ngôn ngữ
+                            </label>
+                            <select id="docLanguage" onchange="saveDraftAuto()">
+                                <option value="vi">Tiếng Việt</option>
+                                <option value="en">English</option>
+                                <option value="both">Song ngữ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-field-full">
+                            <label for="docTags">
+                                <span style="color: #667eea;">🏷️</span> Từ khóa (Tags)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="docTags" 
+                                placeholder="Nhập từ khóa, cách nhau bằng dấu phẩy (VD: toán, giải tích, đại số)"
+                                oninput="saveDraftAuto()"
+                            >
+                            <small style="color: #666;">Giúp người khác dễ dàng tìm thấy tài liệu của bạn</small>
+                        </div>
+
+                        <div class="form-group form-field-full">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="docAgree" required style="width: auto; cursor: pointer;">
+                                <span style="color: #555;">
+                                    Tôi xác nhận rằng tài liệu này không vi phạm bản quyền và tuân thủ 
+                                    <a href="../terms.html" target="_blank" style="color: #667eea; text-decoration: underline;">điều khoản sử dụng</a>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="upload-tips" style="margin-top: 30px;">
+                    <div class="tips-title">
+                        💡 Mẹo tải lên hiệu quả
+                    </div>
+                    <ul class="tips-list">
+                        <li>Đặt tiêu đề rõ ràng, có từ khóa quan trọng</li>
+                        <li>Mô tả chi tiết nội dung để người đọc hiểu rõ</li>
+                        <li>Chọn đúng danh mục và môn học</li>
+                        <li>Thêm nhiều từ khóa để tăng khả năng tìm kiếm</li>
+                        <li>Đảm bảo file rõ ràng, không lỗi</li>
+                    </ul>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="goToStep(1)">
+                        <span>←</span> Quay lại
+                    </button>
+                    <button class="btn-primary" onclick="goToStep(3)">
+                        <span>→</span> Xem trước
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Preview & Confirm -->
+            <div class="upload-section" id="uploadStep3" style="display: none;">
+                <h3 class="section-title">
+                    <span>👁️</span>
+                    Bước 3: Xác nhận thông tin
+                </h3>
+
+                <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 30px; border-radius: 12px; margin-bottom: 25px;">
+                    <h4 style="color: #2c3e50; margin-bottom: 20px; font-weight: 700;">📋 Thông tin tài liệu</h4>
+                    
+                    <div style="display: grid; gap: 15px;">
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px;">
+                            <strong>Tiêu đề:</strong>
+                            <span id="previewTitle"></span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px;">
+                            <strong>Mô tả:</strong>
+                            <span id="previewDescription"></span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px;">
+                            <strong>Danh mục:</strong>
+                            <span id="previewCategory"></span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px;">
+                            <strong>Môn học:</strong>
+                            <span id="previewSubject"></span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px;">
+                            <strong>Trình độ:</strong>
+                            <span id="previewLevel"></span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px;">
+                            <strong>Ngôn ngữ:</strong>
+                            <span id="previewLanguage"></span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 10px;">
+                            <strong>Từ khóa:</strong>
+                            <span id="previewTags"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 30px; border-radius: 12px;">
+                    <h4 style="color: #2c3e50; margin-bottom: 20px; font-weight: 700;">📁 Danh sách file</h4>
+                    <div id="previewFiles"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="goToStep(2)">
+                        <span>←</span> Sửa thông tin
+                    </button>
+                    <button class="btn-primary" onclick="submitUpload()">
+                        <span>⬆️</span> Tải lên
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Success -->
+            <div class="upload-section" id="uploadStep4" style="display: none;">
+                <div class="success-animation">
+                    <div class="success-icon">✅</div>
+                    <h3 class="success-title">Tải lên thành công!</h3>
+                    <p class="success-message">
+                        Tài liệu của bạn đã được tải lên và đang chờ phê duyệt.
+                        <br>
+                        Chúng tôi sẽ thông báo cho bạn khi tài liệu được duyệt.
+                    </p>
+
+                    <div class="uploaded-files-list" id="successFilesList">
+                        <!-- Files will be listed here -->
+                    </div>
+
+                    <!-- Upload Queue Status -->
+                    <div class="upload-queue-status" id="uploadQueueStatus" style="display: none;">
+                        <h4 style="margin-bottom: 15px; color: #2c3e50; font-weight: 700;">📊 Trạng thái tải lên</h4>
+                        <div id="queueList"></div>
+                    </div>
+
+                    <div class="action-buttons" style="max-width: 500px; margin: 0 auto;">
+                        <button class="btn-secondary" onclick="window.location.href='./my-documents.html'">
+                            <span>📄</span> Xem tài liệu của tôi
+                        </button>
+                        <button class="btn-primary" onclick="resetUpload()">
+                            <span>⬆️</span> Tải lên tiếp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>📚 DocShare</h4>
+                    <p>Nền tảng chia sẻ tài liệu học tập hàng đầu dành cho sinh viên Việt Nam</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Liên kết nhanh</h4>
+                    <ul>
+                        <li><a href="./home.html">Dashboard</a></li>
+                        <li><a href="./my-documents.html">Tài liệu của tôi</a></li>
+                        <li><a href="./upload.html">Tải lên</a></li>
+                        <li><a href="./profile.html">Cài đặt</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 DocShare. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()">↑</button>
+
+    <!-- Scripts -->
+    <script src="../main.js"></script>
+    <script src="../header-auth.js"></script>
+    <script>
+        // ============================================================================
+        // GLOBAL VARIABLES & CONFIGURATION
+        // ============================================================================
+        let selectedFiles = [];
+        let currentStep = 1;
+        let uploadController = null;
+        let autoSaveTimer = null;
+        let uploadQueue = [];
+
+        // MAX_FILE_SIZE already defined in main.js
+        const ALLOWED_MIME_TYPES = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/plain'
+        ];
+
+        const ERROR_MESSAGES = {
+            'FILE_TOO_LARGE': 'File quá lớn. Tối đa 50MB',
+            'INVALID_FORMAT': 'Định dạng file không hợp lệ',
+            'UPLOAD_FAILED': 'Tải lên thất bại. Vui lòng thử lại',
+            'NETWORK_ERROR': 'Lỗi kết nối mạng',
+            'UNAUTHORIZED': 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại',
+            'FILE_CORRUPT': 'File bị lỗi hoặc không thể đọc',
+            'DUPLICATE_FILE': 'File đã được chọn',
+            'SERVER_ERROR': 'Lỗi máy chủ. Vui lòng thử lại sau'
+        };
+
+        // API Configuration - THAY ĐỔI THEO BACKEND CỦA BẠN
+        const API_CONFIG = {
+            BASE_URL: 'https://your-api-domain.com/api', // Thay đổi URL này
+            ENDPOINTS: {
+                UPLOAD: '/documents/upload',
+                VALIDATE: '/documents/validate',
+                CHECK_DUPLICATE: '/documents/check-duplicate'
+            }
+        };
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        window.addEventListener('DOMContentLoaded', function() {
+            checkAuthAndInit();
+            setupUploadArea();
+            loadDraftIfExists();
+        });
+
+        function checkAuthAndInit() {
+            const user = getUser();
+            const token = getToken();
+
+            if (!user || !token) {
+                showToast('Vui lòng đăng nhập để tải lên tài liệu', 'info');
+                setTimeout(() => {
+                    window.location.href = '../login.html?redirect=upload';
+                }, 1500);
+                return;
+            }
+
+            updateUserInfo(user);
+        }
+
+        function updateUserInfo(user) {
+            const userNameHeader = document.getElementById('userNameHeader');
+            const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+
+            if (userNameHeader) {
+                const displayName = user.ho_ten || user.email.split('@')[0];
+                userNameHeader.textContent = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
+            }
+
+            if (dropdownUserEmail) {
+                dropdownUserEmail.textContent = user.email;
+            }
+        }
+
+        // ============================================================================
+        // UPLOAD AREA SETUP
+        // ============================================================================
+        function setupUploadArea() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            fileInput.addEventListener('change', handleFileSelect);
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = Array.from(e.dataTransfer.files);
+                handleFiles(files);
+            });
+
+            uploadArea.addEventListener('click', (e) => {
+                if (e.target === uploadArea || uploadArea.contains(e.target)) {
+                    if (!e.target.classList.contains('file-input-hidden')) {
+                        fileInput.click();
+                    }
+                }
+            });
+        }
+
+        // ============================================================================
+        // FILE HANDLING
+        // ============================================================================
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+        }
+
+        async function handleFiles(files) {
+            let validFiles = [];
+            let errors = [];
+
+            for (const file of files) {
+                // Validate file type
+                if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+                    errors.push(`${file.name}: ${ERROR_MESSAGES.INVALID_FORMAT}`);
+                    continue;
+                }
+
+                // Validate file size
+                if (file.size > MAX_FILE_SIZE) {
+                    errors.push(`${file.name}: ${ERROR_MESSAGES.FILE_TOO_LARGE}`);
+                    continue;
+                }
+
+                // Check duplicate
+                if (selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    errors.push(`${file.name}: ${ERROR_MESSAGES.DUPLICATE_FILE}`);
+                    continue;
+                }
+
+                // Validate file integrity
+                const isValid = await validateFileIntegrity(file);
+                if (!isValid) {
+                    errors.push(`${file.name}: ${ERROR_MESSAGES.FILE_CORRUPT}`);
+                    continue;
+                }
+
+                validFiles.push(file);
+            }
+
+            // Show errors
+            if (errors.length > 0) {
+                showToast(errors.join('\n'), 'error');
+            }
+
+            // Add valid files
+            if (validFiles.length > 0) {
+                selectedFiles = [...selectedFiles, ...validFiles];
+                displayFiles();
+                showToast(`Đã thêm ${validFiles.length} file`, 'success');
+            }
+        }
+
+        async function validateFileIntegrity(file) {
+            try {
+                if (file.type === 'application/pdf') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const header = new Uint8Array(arrayBuffer.slice(0, 5));
+                    const pdfHeader = String.fromCharCode(...header);
+                    return pdfHeader === '%PDF-';
+                }
+                // Add more validation for other file types if needed
+                return true;
+            } catch (error) {
+                console.error('File validation error:', error);
+                return false;
+            }
+        }
+
+        function displayFiles() {
+            const filesPreview = document.getElementById('filesPreview');
+            const filesList = document.getElementById('filesList');
+            const fileCount = document.getElementById('fileCount');
+            const btnNext = document.getElementById('btnNextStep1');
+
+            if (selectedFiles.length === 0) {
+                filesPreview.style.display = 'none';
+                btnNext.disabled = true;
+                return;
+            }
+
+            filesPreview.style.display = 'block';
+            fileCount.textContent = selectedFiles.length;
+            btnNext.disabled = false;
+
+            filesList.innerHTML = selectedFiles.map((file, index) => `
+                <div class="file-preview-item" id="file-${index}">
+                    <div class="file-icon-preview">${getFileIcon(file.type)}</div>
+                    <div class="file-info-preview">
+                        <div class="file-name-preview">${file.name}</div>
+                        <div class="file-size-preview">${formatFileSize(file.size)}</div>
+                        <div class="file-progress" id="progress-${index}" style="display: none;">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="progressBar-${index}"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="progressText-${index}">0%</span>
+                                <span id="progressSpeed-${index}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        ${file.type === 'application/pdf' ? `
+                            <button class="file-preview-btn" onclick="previewFile(${index})">
+                                👁️ Xem
+                            </button>
+                        ` : ''}
+                        <button class="file-remove-btn" onclick="removeFile(${index})">
+                            🗑️ Xóa
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFiles();
+            showToast('Đã xóa file', 'info');
+        }
+
+        function clearFiles() {
+            if (selectedFiles.length === 0) return;
+            
+            if (confirm('Bạn có chắc muốn xóa tất cả các file đã chọn?')) {
+                selectedFiles = [];
+                displayFiles();
+                document.getElementById('fileInput').value = '';
+                showToast('Đã xóa tất cả file', 'info');
+            }
+        }
+
+        // ============================================================================
+        // FILE PREVIEW
+        // ============================================================================
+        function previewFile(index) {
+            const file = selectedFiles[index];
+            
+            if (file.type === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                const modal = document.getElementById('previewModal');
+                const container = document.getElementById('previewContainer');
+                
+                container.innerHTML = `
+                    <h3 style="margin-bottom: 20px; color: #2c3e50;">${file.name}</h3>
+                    <iframe src="${fileURL}" style="width: 100%; height: 70vh; border: none; border-radius: 8px;"></iframe>
+                `;
+                
+                modal.classList.add('show');
+            } else {
+                showToast('Chỉ hỗ trợ xem trước file PDF', 'info');
+            }
+        }
+
+        function closePreviewModal() {
+            const modal = document.getElementById('previewModal');
+            modal.classList.remove('show');
+        }
+
+        // ============================================================================
+        // STEP NAVIGATION
+        // ============================================================================
+        function goToStep(step) {
+            // Validate current step
+            if (currentStep === 1 && step === 2) {
+                if (selectedFiles.length === 0) {
+                    showToast('Vui lòng chọn ít nhất một file', 'error');
+                    return;
+                }
+            }
+
+            if (currentStep === 2 && step === 3) {
+                if (!validateForm()) {
+                    return;
+                }
+                updatePreview();
+            }
+
+            // Hide all steps
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`uploadStep${i}`).style.display = 'none';
+                document.getElementById(`step${i}`).classList.remove('active', 'completed');
+            }
+
+            // Show current step
+            document.getElementById(`uploadStep${step}`).style.display = 'block';
+            document.getElementById(`step${step}`).classList.add('active');
+
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}`).classList.add('completed');
+            }
+
+            currentStep = step;
+            scrollToTop();
+        }
+
+        // ============================================================================
+        // FORM VALIDATION
+        // ============================================================================
+        function validateForm() {
+            const title = document.getElementById('docTitle').value.trim();
+            const description = document.getElementById('docDescription').value.trim();
+            const category = document.getElementById('docCategory').value;
+            const agree = document.getElementById('docAgree').checked;
+
+            if (!title) {
+                showToast('Vui lòng nhập tiêu đề tài liệu', 'error');
+                document.getElementById('docTitle').focus();
+                return false;
+            }
+
+            if (title.length < 10) {
+                showToast('Tiêu đề phải có ít nhất 10 ký tự', 'error');
+                document.getElementById('docTitle').focus();
+                return false;
+            }
+
+            if (!description) {
+                showToast('Vui lòng nhập mô tả tài liệu', 'error');
+                document.getElementById('docDescription').focus();
+                return false;
+            }
+
+            if (description.length < 20) {
+                showToast('Mô tả phải có ít nhất 20 ký tự', 'error');
+                document.getElementById('docDescription').focus();
+                return false;
+            }
+
+            if (!category) {
+                showToast('Vui lòng chọn danh mục', 'error');
+                document.getElementById('docCategory').focus();
+                return false;
+            }
+
+            if (!agree) {
+                showToast('Vui lòng xác nhận điều khoản sử dụng', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // ============================================================================
+        // PREVIEW UPDATE
+        // ============================================================================
+        function updatePreview() {
+            const categoryMap = {
+                'tech': '🖥️ Công nghệ thông tin',
+                'science': '🔬 Khoa học tự nhiên',
+                'business': '💼 Kinh tế & Kinh doanh',
+                'language': '🌐 Ngôn ngữ',
+                'social': '📖 Khoa học xã hội',
+                'engineering': '⚙️ Kỹ thuật',
+                'medicine': '⚕️ Y dược',
+                'art': '🎨 Nghệ thuật'
+            };
+
+            const levelMap = {
+                'beginner': 'Cơ bản',
+                'intermediate': 'Trung cấp',
+                'advanced': 'Nâng cao'
+            };
+
+            const languageMap = {
+                'vi': 'Tiếng Việt',
+                'en': 'English',
+                'both': 'Song ngữ'
+            };
+
+            document.getElementById('previewTitle').textContent = document.getElementById('docTitle').value;
+            document.getElementById('previewDescription').textContent = document.getElementById('docDescription').value;
+            document.getElementById('previewCategory').textContent = categoryMap[document.getElementById('docCategory').value] || '-';
+            document.getElementById('previewSubject').textContent = document.getElementById('docSubject').value || '-';
+            document.getElementById('previewLevel').textContent = levelMap[document.getElementById('docLevel').value] || '-';
+            document.getElementById('previewLanguage').textContent = languageMap[document.getElementById('docLanguage').value];
+            document.getElementById('previewTags').textContent = document.getElementById('docTags').value || '-';
+
+            const previewFiles = document.getElementById('previewFiles');
+            previewFiles.innerHTML = selectedFiles.map(file => `
+                <div class="uploaded-file-item">
+                    <span style="font-size: 1.5rem;">${getFileIcon(file.type)}</span>
+                    <span style="flex: 1; font-weight: 600;">${file.name}</span>
+                    <span style="color: #666; font-size: 0.9rem;">${formatFileSize(file.size)}</span>
+                </div>
+            `).join('');
+        }
+
+        // ============================================================================
+        // UPLOAD FUNCTIONALITY
+        // ============================================================================
+        async function submitUpload() {
+            uploadController = new AbortController();
+            
+            showLoading();
+            updateLoadingText('Đang chuẩn bị tải lên...');
+
+            try {
+                // Upload files in queue
+                await uploadFilesInQueue();
+                
+                hideLoading();
+                displaySuccess();
+                goToStep(4);
+                clearDraft();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Upload error:', error);
+                
+                if (error.name === 'AbortError') {
+                    showToast('Đã hủy tải lên', 'info');
+                } else {
+                    const errorMsg = ERROR_MESSAGES[error.message] || ERROR_MESSAGES.UPLOAD_FAILED;
+                    showToast(errorMsg, 'error');
+                }
+            }
+        }
+
+        async function uploadFilesInQueue() {
+            uploadQueue = selectedFiles.map((file, index) => ({
+                file,
+                index,
+                status: 'pending',
+                progress: 0
+            }));
+
+            for (let item of uploadQueue) {
+                item.status = 'uploading';
+                await uploadSingleFile(item);
+            }
+        }
+
+        async function uploadSingleFile(queueItem) {
+            const { file, index } = queueItem;
+            
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Add metadata
+                formData.append('title', document.getElementById('docTitle').value);
+                formData.append('description', document.getElementById('docDescription').value);
+                formData.append('category', document.getElementById('docCategory').value);
+                formData.append('subject', document.getElementById('docSubject').value);
+                formData.append('level', document.getElementById('docLevel').value);
+                formData.append('language', document.getElementById('docLanguage').value);
+                formData.append('tags', document.getElementById('docTags').value);
+                formData.append('fileIndex', index);
+
+                const xhr = new XMLHttpRequest();
+                
+                // Progress tracking
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        updateFileProgress(index, percent, e.loaded, e.total);
+                        queueItem.progress = percent;
+                    }
+                });
+
+                // Success
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200 || xhr.status === 201) {
+                        queueItem.status = 'completed';
+                        updateFileProgress(index, 100);
+                        resolve(JSON.parse(xhr.response));
+                    } else {
+                        queueItem.status = 'failed';
+                        reject(new Error('UPLOAD_FAILED'));
+                    }
+                });
+
+                // Error
+                xhr.addEventListener('error', () => {
+                    queueItem.status = 'failed';
+                    reject(new Error('NETWORK_ERROR'));
+                });
+
+                xhr.addEventListener('abort', () => {
+                    queueItem.status = 'cancelled';
+                    reject(new Error('AbortError'));
+                });
+
+                // PRODUCTION: Replace with your actual API endpoint
+                const uploadUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`;
+                
+                // DEVELOPMENT: Simulate upload
+                // Comment out the real upload and use simulation
+                simulateFileUpload(index).then(resolve).catch(reject);
+                return;
+
+                // PRODUCTION CODE (uncomment when ready):
+                /*
+                xhr.open('POST', uploadUrl);
+                xhr.setRequestHeader('Authorization', `Bearer ${getToken()}`);
+                xhr.send(formData);
+                */
+            });
+        }
+
+        // Simulate upload for development
+        function simulateFileUpload(index) {
+            return new Promise((resolve) => {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    updateFileProgress(index, progress);
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        resolve({ success: true });
+                    }
+                }, 200);
+            });
+        }
+
+        function updateFileProgress(index, percent, loaded, total) {
+            const progressContainer = document.getElementById(`progress-${index}`);
+            const progressBar = document.getElementById(`progressBar-${index}`);
+            const progressText = document.getElementById(`progressText-${index}`);
+            const progressSpeed = document.getElementById(`progressSpeed-${index}`);
+
+            if (progressContainer) {
+                progressContainer.style.display = 'block';
+            }
+
+            if (progressBar) {
+                progressBar.style.width = `${percent}%`;
+            }
+
+            if (progressText) {
+                progressText.textContent = `${percent}%`;
+            }
+
+            if (progressSpeed && loaded && total) {
+                const speedMBps = ((loaded / 1024 / 1024) / 2).toFixed(2); // Rough estimate
+                progressSpeed.textContent = `${speedMBps} MB/s`;
+            }
+
+            updateLoadingText(`Đang tải lên file ${index + 1}/${selectedFiles.length} (${percent}%)`);
+        }
+
+        function cancelUpload() {
+            if (uploadController) {
+                uploadController.abort();
+                uploadController = null;
+                showToast('Đã hủy tải lên', 'info');
+            }
+        }
+
+        // ============================================================================
+        // SUCCESS DISPLAY
+        // ============================================================================
+        function displaySuccess() {
+            const successList = document.getElementById('successFilesList');
+            successList.innerHTML = `
+                <h4 style="margin-bottom: 15px; color: #2c3e50; font-weight: 700;">
+                    Đã tải lên ${selectedFiles.length} file:
+                </h4>
+                ${selectedFiles.map(file => `
+                    <div class="uploaded-file-item">
+                        <span style="font-size: 1.5rem;">${getFileIcon(file.type)}</span>
+                        <span style="flex: 1; font-weight: 600;">${file.name}</span>
+                        <span style="color: #27ae60; font-weight: 700;">✓</span>
+                    </div>
+                `).join('')}
+            `;
+
+            // Show upload queue status if multiple files
+            if (uploadQueue.length > 1) {
+                const queueStatus = document.getElementById('uploadQueueStatus');
+                const queueList = document.getElementById('queueList');
+                
+                queueList.innerHTML = uploadQueue.map(item => `
+                    <div class="queue-item">
+                        <span>${item.file.name}</span>
+                        <span class="queue-status ${item.status}">${getQueueStatusText(item.status)}</span>
+                    </div>
+                `).join('');
+                
+                queueStatus.style.display = 'block';
+            }
+        }
+
+        function getQueueStatusText(status) {
+            const statusMap = {
+                'pending': 'Đang chờ',
+                'uploading': 'Đang tải',
+                'completed': 'Hoàn thành',
+                'failed': 'Thất bại',
+                'cancelled': 'Đã hủy'
+            };
+            return statusMap[status] || status;
+        }
+
+        // ============================================================================
+        // DRAFT AUTO-SAVE
+        // ============================================================================
+        function saveDraftAuto() {
+            // Clear existing timer
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+            }
+
+            // Set new timer (save after 2 seconds of inactivity)
+            autoSaveTimer = setTimeout(() => {
+                saveDraft();
+            }, 2000);
+        }
+
+        function saveDraft() {
+            const draft = {
+                title: document.getElementById('docTitle').value,
+                description: document.getElementById('docDescription').value,
+                category: document.getElementById('docCategory').value,
+                subject: document.getElementById('docSubject').value,
+                level: document.getElementById('docLevel').value,
+                language: document.getElementById('docLanguage').value,
+                tags: document.getElementById('docTags').value,
+                timestamp: Date.now()
+            };
+
+            // Only save if there's actual content
+            if (draft.title || draft.description) {
+                localStorage.setItem('docShareUploadDraft', JSON.stringify(draft));
+                showDraftIndicator();
+            }
+        }
+
+        function loadDraft() {
+            const draftStr = localStorage.getItem('docShareUploadDraft');
+            
+            if (!draftStr) {
+                showToast('Không có bản nháp nào', 'info');
+                return;
+            }
+
+            const draft = JSON.parse(draftStr);
+            
+            if (confirm('Tìm thấy bản nháp đã lưu. Bạn có muốn khôi phục không?')) {
+                document.getElementById('docTitle').value = draft.title || '';
+                document.getElementById('docDescription').value = draft.description || '';
+                document.getElementById('docCategory').value = draft.category || '';
+                document.getElementById('docSubject').value = draft.subject || '';
+                document.getElementById('docLevel').value = draft.level || '';
+                document.getElementById('docLanguage').value = draft.language || 'vi';
+                document.getElementById('docTags').value = draft.tags || '';
+
+                // Update character counters
+                updateCharCount('docTitle', 'titleCount', 200);
+                updateCharCount('docDescription', 'descCount', 1000);
+
+                showToast('Đã khôi phục bản nháp', 'success');
+                
+                // Go to step 2 if we're on step 1 and have files
+                if (currentStep === 1 && selectedFiles.length > 0) {
+                    goToStep(2);
+                }
+            }
+        }
+
+        function loadDraftIfExists() {
+            const draftStr = localStorage.getItem('docShareUploadDraft');
+            if (draftStr) {
+                const draft = JSON.parse(draftStr);
+                const daysSinceSave = (Date.now() - draft.timestamp) / (1000 * 60 * 60 * 24);
+                
+                // Auto-prompt if draft is less than 7 days old
+                if (daysSinceSave < 7) {
+                    setTimeout(() => {
+                        if (confirm('Bạn có bản nháp chưa hoàn thành. Tiếp tục chỉnh sửa?')) {
+                            loadDraft();
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        function clearDraft() {
+            localStorage.removeItem('docShareUploadDraft');
+        }
+
+        function showDraftIndicator() {
+            const indicator = document.getElementById('draftIndicator');
+            indicator.classList.add('show');
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // ============================================================================
+        // RESET UPLOAD
+        // ============================================================================
+        function resetUpload() {
+            selectedFiles = [];
+            uploadQueue = [];
+            currentStep = 1;
+            
+            document.getElementById('documentForm').reset();
+            document.getElementById('fileInput').value = '';
+            
+            displayFiles();
+            goToStep(1);
+            
+            showToast('Sẵn sàng tải lên tài liệu mới', 'info');
+        }
+
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
+        function updateCharCount(inputId, countId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(countId);
+            const length = input.value.length;
+            
+            counter.textContent = `${length}/${maxLength} ký tự`;
+            
+            if (length > maxLength * 0.9) {
+                counter.classList.add('danger');
+                counter.classList.remove('warning');
+            } else if (length > maxLength * 0.7) {
+                counter.classList.add('warning');
+                counter.classList.remove('danger');
+            } else {
+                counter.classList.remove('warning', 'danger');
+            }
+        }
+
+        function getFileIcon(type) {
+            if (type.includes('pdf')) return '📕';
+            if (type.includes('word')) return '📘';
+            if (type.includes('powerpoint') || type.includes('presentation')) return '📊';
+            if (type.includes('excel') || type.includes('spreadsheet')) return '📗';
+            if (type.includes('text')) return '📄';
+            return '📎';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function updateLoadingText(text) {
+            const loadingText = document.getElementById('loadingText');
+            if (loadingText) {
+                loadingText.textContent = text;
+            }
+        }
+
+        // ============================================================================
+        // UI CONTROLS
+        // ============================================================================
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.querySelector('.nav');
+            if (nav) {
+                nav.classList.toggle('active');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('userDropdownMenu');
+            const dropdownBtn = document.querySelector('.user-dropdown-btn');
+            
+            if (dropdown && dropdownBtn) {
+                if (!dropdown.contains(e.target) && !dropdownBtn.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+
+        // Close preview modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePreviewModal();
+            }
+        });
+
+        // Prevent form submission on Enter
+        document.getElementById('documentForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+
+        // Warn user before leaving if files are selected
+        window.addEventListener('beforeunload', function(e) {
+            if (selectedFiles.length > 0 && currentStep < 4) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+    </script>
+</body>
+</html>

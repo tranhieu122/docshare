@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DocShare - Nền tảng chia sẻ tài liệu học tập hàng đầu cho sinh viên Việt Nam">
+    <meta name="keywords" content="tài liệu học tập, chia sẻ tài liệu, sinh viên, đại học">
+    <meta name="author" content="DocShare Team">
+    <meta property="og:title" content="DocShare - Chia sẻ tài liệu học tập">
+    <meta property="og:description" content="Hàng ngàn tài liệu chất lượng từ sinh viên cho sinh viên">
+    <meta property="og:type" content="website">
+    <title>DocShare - Chia sẻ tài liệu học tập chất lượng cao</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+</head>
+<body>
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast">
+        <span id="toastMessage"></span>
+        <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="./index.html" style="text-decoration: none; color: inherit;">
+                    <h1>📚 DocShare</h1>
+                </a>
+                <span class="logo-subtitle">Học tập & Chia sẻ</span>
+            </div>
+            <nav class="nav">
+                <a href="./index.html" class="nav-link active">
+                    <span class="nav-icon">🏠</span>
+                    Trang chủ
+                </a>
+                <a href="./documents/list.html" class="nav-link">
+                    <span class="nav-icon">🔍</span>
+                    Khám phá
+                </a>
+                <a href="#features" class="nav-link">
+                    <span class="nav-icon">✨</span>
+                    Tính năng
+                </a>
+                <a href="#about" class="nav-link">
+                    <span class="nav-icon">ℹ️</span>
+                    Về chúng tôi
+                </a>
+                <div class="nav-buttons" id="authButtons">
+                    <a href="./login.html" class="btn-login">
+                        <span>🔑</span> Đăng nhập
+                    </a>
+                    <a href="./register.html" class="btn-register">
+                        <span>📝</span> Đăng ký
+                    </a>
+                </div>
+                <!-- User Dropdown (chỉ hiện khi đã đăng nhập) -->
+                <div class="nav-buttons" id="userSection" style="display: none;">
+                    <a href="./admin/dashboard.html" id="adminLink" class="btn-danger" style="display: none;">
+                        <span>🔑</span> Quản trị
+                    </a>
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                            <span class="user-icon">👤</span>
+                            <span id="userNameHeader">Người dùng</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <span class="user-icon">👤</span>
+                                <span id="dropdownUserEmail" style="margin-left: 8px;">email@example.com</span>
+                            </div>
+                            <div class="dropdown-content-grid">
+                                <a href="./sinhvien/home.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📊</span>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="./sinhvien/my-documents.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📄</span>
+                                    <span>Tài liệu của tôi</span>
+                                </a>
+                                <a href="./sinhvien/upload.html" class="dropdown-item">
+                                    <span class="dropdown-icon">⬆️</span>
+                                    <span>Tải lên</span>
+                                </a>
+                                <a href="./sinhvien/profile.html" class="dropdown-item">
+                                    <span class="dropdown-icon">⚙️</span>
+                                    <span>Cài đặt</span>
+                                </a>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button onclick="logout()" class="dropdown-item dropdown-logout">
+                                <span class="dropdown-icon">🚪</span>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background">
+            <div class="hero-animation"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <h2 class="hero-title">Chia sẻ và tìm kiếm tài liệu học tập</h2>
+                <p class="hero-description">
+                    Hàng ngàn tài liệu chất lượng từ sinh viên cho sinh viên
+                    <br>
+                    <span class="hero-stats">
+                        <span>📚 10,000+ tài liệu</span>
+                        <span>👥 5,000+ thành viên</span>
+                        <span>⭐ 4.8/5 đánh giá</span>
+                    </span>
+                </p>
+                
+                <!-- Search Box -->
+                <div class="search-box">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Tìm kiếm tài liệu, môn học, giáo trình..."
+                            autocomplete="off"
+                        >
+                        <button class="clear-search" onclick="clearSearch()" title="Xóa">
+                            &times;
+                        </button>
+                    </div>
+                    <button onclick="searchDocuments()" class="search-button">
+                        <span>🔍</span> Tìm kiếm
+                    </button>
+                </div>
+
+                <!-- Search Suggestions -->
+                <div id="searchSuggestions" class="search-suggestions">
+                    <p class="suggestions-title">Tìm kiếm phổ biến:</p>
+                    <div class="suggestions-tags">
+                        <span onclick="quickSearch('Toán cao cấp')">Toán cao cấp</span>
+                        <span onclick="quickSearch('Lập trình C++')">Lập trình C++</span>
+                        <span onclick="quickSearch('Cơ sở dữ liệu')">Cơ sở dữ liệu</span>
+                        <span onclick="quickSearch('Tiếng Anh')">Tiếng Anh</span>
+                        <span onclick="quickSearch('Vật lý')">Vật lý</span>
+                    </div>
+                </div>
+
+                <!-- Quick Filter -->
+                <div class="quick-filter">
+                    <button class="filter-btn active" data-filter="all">Tất cả</button>
+                    <button class="filter-btn" data-filter="new">Mới nhất</button>
+                    <button class="filter-btn" data-filter="popular">Phổ biến</button>
+                    <button class="filter-btn" data-filter="free">Miễn phí</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="statistics">
+        <div class="container">
+            <div class="stats-wrapper">
+                <div class="stat-item">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-number" data-target="10000">0</div>
+                    <div class="stat-label">Tài liệu</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-number" data-target="5000">0</div>
+                    <div class="stat-label">Thành viên</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">⬇️</div>
+                    <div class="stat-number" data-target="50000">0</div>
+                    <div class="stat-label">Lượt tải</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-number" data-target="4.8">0</div>
+                    <div class="stat-label">Đánh giá</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-header">
+                <h3>Danh mục môn học</h3>
+                <p class="section-description">Khám phá các môn học phổ biến</p>
+            </div>
+            
+            <div class="category-filter">
+                <button class="category-filter-btn active" data-category="all">Tất cả</button>
+                <button class="category-filter-btn" data-category="tech">Công nghệ</button>
+                <button class="category-filter-btn" data-category="science">Khoa học</button>
+                <button class="category-filter-btn" data-category="business">Kinh tế</button>
+                <button class="category-filter-btn" data-category="language">Ngôn ngữ</button>
+                <button class="category-filter-btn" data-category="social">Xã hội</button>
+            </div>
+
+            <div class="category-grid" id="categoryGrid">
+                <!-- Tech Categories -->
+                <div class="category-card" data-category="tech" onclick="viewSubject('Toán cao cấp')">
+                    <div class="category-badge">
+                        <span class="badge-hot">HOT</span>
+                    </div>
+                    <div class="category-icon">📊</div>
+                    <h4>Toán cao cấp</h4>
+                    <p>Giải tích, Đại số tuyến tính</p>
+                    <div class="category-stats">
+                        <span>📄 1,234 tài liệu</span>
+                        <span>⬇️ 45.6K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>Giải tích</span>
+                        <span>Đại số</span>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="tech" onclick="viewSubject('Lập trình C++')">
+                    <div class="category-badge">
+                        <span class="badge-new">MỚI</span>
+                    </div>
+                    <div class="category-icon">💻</div>
+                    <h4>Lập trình C++</h4>
+                    <p>Ngôn ngữ lập trình hướng đối tượng</p>
+                    <div class="category-stats">
+                        <span>📄 987 tài liệu</span>
+                        <span>⬇️ 38.2K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>OOP</span>
+                        <span>STL</span>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="tech" onclick="viewSubject('Cơ sở dữ liệu')">
+                    <div class="category-icon">🗄️</div>
+                    <h4>Cơ sở dữ liệu</h4>
+                    <p>SQL, MySQL, MongoDB</p>
+                    <div class="category-stats">
+                        <span>📄 756 tài liệu</span>
+                        <span>⬇️ 29.8K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>SQL</span>
+                        <span>NoSQL</span>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="tech" onclick="viewSubject('Cấu trúc dữ liệu')">
+                    <div class="category-badge">
+                        <span class="badge-hot">HOT</span>
+                    </div>
+                    <div class="category-icon">🔗</div>
+                    <h4>Cấu trúc dữ liệu</h4>
+                    <p>Stack, Queue, Tree, Graph</p>
+                    <div class="category-stats">
+                        <span>📄 892 tài liệu</span>
+                        <span>⬇️ 35.1K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>Algorithm</span>
+                        <span>Tree</span>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="tech" onclick="viewSubject('Kỹ thuật phần mềm')">
+                    <div class="category-icon">⚙️</div>
+                    <h4>Kỹ thuật phần mềm</h4>
+                    <p>UML, Design Pattern</p>
+                    <div class="category-stats">
+                        <span>📄 643 tài liệu</span>
+                        <span>⬇️ 24.7K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>UML</span>
+                        <span>Agile</span>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="tech" onclick="viewSubject('Mạng máy tính')">
+                    <div class="category-icon">🌐</div>
+                    <h4>Mạng máy tính</h4>
+                    <p>TCP/IP, Network Security</p>
+                    <div class="category-stats">
+                        <span>📄 521 tài liệu</span>
+                        <span>⬇️ 19.3K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>TCP/IP</span>
+                        <span>Security</span>
+                    </div>
+                </div>
+
+                <!-- Language Categories -->
+                <div class="category-card" data-category="language" onclick="viewSubject('Tiếng Anh chuyên ngành')">
+                    <div class="category-badge">
+                        <span class="badge-new">MỚI</span>
+                    </div>
+                    <div class="category-icon">🌐</div>
+                    <h4>Tiếng Anh chuyên ngành</h4>
+                    <p>English for IT, Business</p>
+                    <div class="category-stats">
+                        <span>📄 1,045 tài liệu</span>
+                        <span>⬇️ 42.8K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>TOEIC</span>
+                        <span>IELTS</span>
+                    </div>
+                </div>
+
+                <!-- Science Categories -->
+                <div class="category-card" data-category="science" onclick="viewSubject('Vật lý đại cương')">
+                    <div class="category-icon">⚛️</div>
+                    <h4>Vật lý đại cương</h4>
+                    <p>Cơ học, Điện học, Quang học</p>
+                    <div class="category-stats">
+                        <span>📄 678 tài liệu</span>
+                        <span>⬇️ 26.4K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>Cơ học</span>
+                        <span>Điện</span>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="science" onclick="viewSubject('Hóa học đại cương')">
+                    <div class="category-icon">⚗️</div>
+                    <h4>Hóa học đại cương</h4>
+                    <p>Hóa vô cơ, Hóa hữu cơ</p>
+                    <div class="category-stats">
+                        <span>📄 534 tài liệu</span>
+                        <span>⬇️ 21.2K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>Vô cơ</span>
+                        <span>Hữu cơ</span>
+                    </div>
+                </div>
+
+                <!-- Business Categories -->
+                <div class="category-card" data-category="business" onclick="viewSubject('Kinh tế vi mô')">
+                    <div class="category-icon">📈</div>
+                    <h4>Kinh tế vi mô</h4>
+                    <p>Cung cầu, Thị trường</p>
+                    <div class="category-stats">
+                        <span>📄 789 tài liệu</span>
+                        <span>⬇️ 31.5K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>Cung cầu</span>
+                        <span>Thị trường</span>
+                    </div>
+                </div>
+
+                <!-- Social Categories -->
+                <div class="category-card" data-category="social" onclick="viewSubject('Triết học Mác-Lênin')">
+                    <div class="category-icon">📚</div>
+                    <h4>Triết học Mác-Lênin</h4>
+                    <p>Chủ nghĩa duy vật</p>
+                    <div class="category-stats">
+                        <span>📄 456 tài liệu</span>
+                        <span>⬇️ 18.9K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>Triết học</span>
+                        <span>Chính trị</span>
+                    </div>
+                </div>
+
+                <div class="category-card" data-category="social" onclick="viewSubject('Pháp luật đại cương')">
+                    <div class="category-icon">⚖️</div>
+                    <h4>Pháp luật đại cương</h4>
+                    <p>Hiến pháp, Luật dân sự</p>
+                    <div class="category-stats">
+                        <span>📄 567 tài liệu</span>
+                        <span>⬇️ 22.3K lượt tải</span>
+                    </div>
+                    <div class="category-tags">
+                        <span>Hiến pháp</span>
+                        <span>Dân sự</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-all-categories">
+                <a href="./categories.html" class="btn-view-all">
+                    Xem tất cả danh mục
+                    <span>→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Documents -->
+    <section class="featured-docs">
+        <div class="container">
+            <div class="section-header">
+                <h3>Tài liệu nổi bật</h3>
+                <p class="section-description">Những tài liệu được đánh giá cao nhất</p>
+            </div>
+
+            <div class="featured-carousel">
+                <button class="carousel-btn prev" onclick="slideCarousel(-1)">
+                    ‹
+                </button>
+                <div class="carousel-container" id="featuredCarousel">
+                    <div class="featured-card">
+                        <div class="featured-badge">⭐ Xuất sắc</div>
+                        <div class="featured-image">
+                            <img src="./images/doc1.jpg" alt="Tài liệu nổi bật" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22%3E%3Crect fill=%22%23667eea%22 width=%22200%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📚%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="featured-content">
+                            <h4>Giáo trình Toán cao cấp A1</h4>
+                            <p class="featured-author">👤 Nguyễn Văn Hiếu</p>
+                            <div class="featured-meta">
+                                <span>⬇️ 1,234 lượt tải</span>
+                                <span>⭐ 4.9/5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="featured-card">
+                        <div class="featured-badge">🔥 Thịnh hành</div>
+                        <div class="featured-image">
+                            <img src="./images/doc2.jpg" alt="Tài liệu nổi bật" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22%3E%3Crect fill=%22%2327ae60%22 width=%22200%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E💻%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="featured-content">
+                            <h4>Bài tập lập trình C++ có lời giải</h4>
+                            <p class="featured-author">👤 Trần Thị Chi</p>
+                            <div class="featured-meta">
+                                <span>⬇️ 2,456 lượt tải</span>
+                                <span>⭐ 4.8/5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="featured-card">
+                        <div class="featured-badge">✨ Mới</div>
+                        <div class="featured-image">
+                            <img src="./images/doc3.jpg" alt="Tài liệu nổi bật" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22%3E%3Crect fill=%22%23e74c3c%22 width=%22200%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E🗄️%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="featured-content">
+                            <h4>Cơ sở dữ liệu - Lý thuyết & Thực hành</h4>
+                            <p class="featured-author">👤 Lê Văn Minh</p>
+                            <div class="featured-meta">
+                                <span>⬇️ 892 lượt tải</span>
+                                <span>⭐ 4.7/5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-btn next" onclick="slideCarousel(1)">
+                    ›
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Documents -->
+    <section class="recent-docs">
+        <div class="container">
+            <div class="section-header">
+                <h3>Tài liệu mới nhất</h3>
+                <p class="section-description">Tài liệu vừa được cập nhật</p>
+                <div class="section-actions">
+                    <select id="sortSelect" class="sort-select" onchange="sortDocuments()">
+                        <option value="newest">Mới nhất</option>
+                        <option value="popular">Phổ biến</option>
+                        <option value="rating">Đánh giá cao</option>
+                        <option value="downloads">Tải nhiều nhất</option>
+                    </select>
+                    <select id="viewSelect" class="view-select" onchange="changeView()">
+                        <option value="grid">Lưới</option>
+                        <option value="list">Danh sách</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="docs-grid" id="recentDocs">
+                <!-- Document Card 1 -->
+                <div class="doc-card">
+                    <div class="doc-header">
+                        <span class="doc-type">PDF</span>
+                        <button class="doc-favorite" onclick="toggleFavorite(this)">
+                            ♡
+                        </button>
+                    </div>
+                    <div class="doc-thumbnail">
+                        <img src="./images/thumb1.jpg" alt="Thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23667eea%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📄%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="doc-body">
+                        <h4>Bài giảng Toán cao cấp A1</h4>
+                        <p class="doc-description">Giáo trình đầy đủ cho môn Toán cao cấp A1, bao gồm lý thuyết và bài tập</p>
+                        <div class="doc-info">
+                            <span class="doc-author">👤 Nguyễn Văn Hiếu</span>
+                            <span class="doc-date">📅 15/11/2025</span>
+                        </div>
+                        <div class="doc-tags">
+                            <span class="tag">Toán</span>
+                            <span class="tag">Giải tích</span>
+                        </div>
+                        <div class="doc-stats">
+                            <span title="Lượt xem">👁️ 1,234</span>
+                            <span title="Lượt tải">⬇️ 567</span>
+                            <span title="Đánh giá">⭐ 4.8</span>
+                            <span title="Bình luận">💬 23</span>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="./documents/view.html?id=1" class="btn-view">
+                                <span>👁️</span> Xem
+                            </a>
+                            <button class="btn-download" onclick="downloadDoc(1)">
+                                <span>⬇️</span> Tải về
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Card 2 -->
+                <div class="doc-card">
+                    <div class="doc-header">
+                        <span class="doc-type">DOCX</span>
+                        <button class="doc-favorite" onclick="toggleFavorite(this)">
+                            ♡
+                        </button>
+                    </div>
+                    <div class="doc-thumbnail">
+                        <img src="./images/thumb2.jpg" alt="Thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%2327ae60%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📝%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="doc-body">
+                        <h4>Bài tập C++ có lời giải</h4>
+                        <p class="doc-description">100 bài tập lập trình C++ từ cơ bản đến nâng cao có lời giải chi tiết</p>
+                        <div class="doc-info">
+                            <span class="doc-author">👤 Trần Thị Chi</span>
+                            <span class="doc-date">📅 14/11/2025</span>
+                        </div>
+                        <div class="doc-tags">
+                            <span class="tag">C++</span>
+                            <span class="tag">Lập trình</span>
+                        </div>
+                        <div class="doc-stats">
+                            <span title="Lượt xem">👁️ 2,456</span>
+                            <span title="Lượt tải">⬇️ 892</span>
+                            <span title="Đánh giá">⭐ 4.9</span>
+                            <span title="Bình luận">💬 45</span>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="./documents/view.html?id=2" class="btn-view">
+                                <span>👁️</span> Xem
+                            </a>
+                            <button class="btn-download" onclick="downloadDoc(2)">
+                                <span>⬇️</span> Tải về
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Card 3 -->
+                <div class="doc-card">
+                    <div class="doc-header">
+                        <span class="doc-type">PDF</span>
+                        <button class="doc-favorite" onclick="toggleFavorite(this)">
+                            ♡
+                        </button>
+                    </div>
+                    <div class="doc-thumbnail">
+                        <img src="./images/thumb3.jpg" alt="Thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23e74c3c%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E🗄️%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="doc-body">
+                        <h4>Cơ sở dữ liệu - SQL</h4>
+                        <p class="doc-description">Tổng hợp kiến thức SQL từ cơ bản đến nâng cao với ví dụ minh họa</p>
+                        <div class="doc-info">
+                            <span class="doc-author">👤 Lê Văn Minh</span>
+                            <span class="doc-date">📅 13/11/2025</span>
+                        </div>
+                        <div class="doc-tags">
+                            <span class="tag">SQL</span>
+                            <span class="tag">Database</span>
+                        </div>
+                        <div class="doc-stats">
+                            <span title="Lượt xem">👁️ 1,678</span>
+                            <span title="Lượt tải">⬇️ 734</span>
+                            <span title="Đánh giá">⭐ 4.7</span>
+                            <span title="Bình luận">💬 31</span>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="./documents/view.html?id=3" class="btn-view">
+                                <span>👁️</span> Xem
+                            </a>
+                            <button class="btn-download" onclick="downloadDoc(3)">
+                                <span>⬇️</span> Tải về
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Card 4 -->
+                <div class="doc-card">
+                    <div class="doc-header">
+                        <span class="doc-type">PPTX</span>
+                        <button class="doc-favorite" onclick="toggleFavorite(this)">
+                            ♡
+                        </button>
+                    </div>
+                    <div class="doc-thumbnail">
+                        <img src="./images/thumb4.jpg" alt="Thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23f39c12%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📊%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="doc-body">
+                        <h4>Slide Vật lý đại cương</h4>
+                        <p class="doc-description">Bài giảng Vật lý đại cương đầy đủ với hình ảnh minh họa</p>
+                        <div class="doc-info">
+                            <span class="doc-author">👤 Phạm Thị D</span>
+                            <span class="doc-date">📅 12/11/2025</span>
+                        </div>
+                        <div class="doc-tags">
+                            <span class="tag">Vật lý</span>
+                            <span class="tag">Slide</span>
+                        </div>
+                        <div class="doc-stats">
+                            <span title="Lượt xem">👁️ 923</span>
+                            <span title="Lượt tải">⬇️ 456</span>
+                            <span title="Đánh giá">⭐ 4.6</span>
+                            <span title="Bình luận">💬 18</span>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="./documents/view.html?id=4" class="btn-view">
+                                <span>👁️</span> Xem
+                            </a>
+                            <button class="btn-download" onclick="downloadDoc(4)">
+                                <span>⬇️</span> Tải về
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Card 5 -->
+                <div class="doc-card">
+                    <div class="doc-header">
+                        <span class="doc-type">PDF</span>
+                        <button class="doc-favorite" onclick="toggleFavorite(this)">
+                            ♡
+                        </button>
+                    </div>
+                    <div class="doc-thumbnail">
+                        <img src="./images/thumb5.jpg" alt="Thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%239b59b6%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E🌐%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="doc-body">
+                        <h4>TOEIC 600+ từ vựng</h4>
+                        <p class="doc-description">Tổng hợp từ vựng TOEIC phổ biến kèm ví dụ và bài tập</p>
+                        <div class="doc-info">
+                            <span class="doc-author">👤 Hoàng Văn E</span>
+                            <span class="doc-date">📅 11/11/2025</span>
+                        </div>
+                        <div class="doc-tags">
+                            <span class="tag">Tiếng Anh</span>
+                            <span class="tag">TOEIC</span>
+                        </div>
+                        <div class="doc-stats">
+                            <span title="Lượt xem">👁️ 3,245</span>
+                            <span title="Lượt tải">⬇️ 1,234</span>
+                            <span title="Đánh giá">⭐ 4.9</span>
+                            <span title="Bình luận">💬 67</span>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="./documents/view.html?id=5" class="btn-view">
+                                <span>👁️</span> Xem
+                            </a>
+                            <button class="btn-download" onclick="downloadDoc(5)">
+                                <span>⬇️</span> Tải về
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Card 6 -->
+                <div class="doc-card">
+                    <div class="doc-header">
+                        <span class="doc-type">DOCX</span>
+                        <button class="doc-favorite" onclick="toggleFavorite(this)">
+                            ♡
+                        </button>
+                    </div>
+                    <div class="doc-thumbnail">
+                        <img src="./images/thumb6.jpg" alt="Thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%2316a085%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📈%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="doc-body">
+                        <h4>Bài tập Kinh tế vi mô</h4>
+                        <p class="doc-description">Tuyển tập bài tập Kinh tế vi mô có lời giải chi tiết</p>
+                        <div class="doc-info">
+                            <span class="doc-author">👤 Đỗ Thị F</span>
+                            <span class="doc-date">📅 10/11/2025</span>
+                        </div>
+                        <div class="doc-tags">
+                            <span class="tag">Kinh tế</span>
+                            <span class="tag">Vi mô</span>
+                        </div>
+                        <div class="doc-stats">
+                            <span title="Lượt xem">👁️ 1,456</span>
+                            <span title="Lượt tải">⬇️ 678</span>
+                            <span title="Đánh giá">⭐ 4.5</span>
+                            <span title="Bình luận">💬 29</span>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="./documents/view.html?id=6" class="btn-view">
+                                <span>👁️</span> Xem
+                            </a>
+                            <button class="btn-download" onclick="downloadDoc(6)">
+                                <span>⬇️</span> Tải về
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="load-more">
+                <button class="btn-load-more" onclick="loadMoreDocs()">
+                    <span class="loading-text">Xem thêm tài liệu</span>
+                    <span class="loading-spinner" style="display:none;">⌛</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h3>Đánh giá từ người dùng</h3>
+                <p class="section-description">Những gì mọi người nói về DocShare</p>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                    <p class="testimonial-text">
+                        "DocShare đã giúp tôi tiết kiệm rất nhiều thời gian trong việc tìm kiếm tài liệu học tập. Các tài liệu đều rất chất lượng và được cập nhật thường xuyên."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨‍🎓</div>
+                        <div class="author-info">
+                            <h5>Nguyễn Văn Hiếu</h5>
+                            <p>Sinh viên CNTT - ĐH Bách Khoa</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                    <p class="testimonial-text">
+                        "Tôi rất thích tính năng chia sẻ tài liệu của DocShare. Đây là nơi tuyệt vời để sinh viên hỗ trợ lẫn nhau trong học tập."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👩‍🎓</div>
+                        <div class="author-info">
+                            <h5>Trần Thị Chi</h5>
+                            <p>Sinh viên Kinh tế - ĐH Quốc Gia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                    <p class="testimonial-text">
+                        "Giao diện đẹp, dễ sử dụng và tài liệu đa dạng. DocShare là công cụ không thể thiếu cho sinh viên hiện đại."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨‍💼</div>
+                        <div class="author-info">
+                            <h5>Lê Văn Minh</h5>
+                            <p>Sinh viên Y khoa - ĐH Y Dược</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h3>Sẵn sàng bắt đầu?</h3>
+                <p>Tham gia cộng đồng hàng ngàn sinh viên đang chia sẻ và học tập cùng nhau</p>
+                <div class="cta-buttons">
+                    <a href="./register.html" class="btn-cta-primary">
+                        <span>🚀</span> Đăng ký ngay
+                    </a>
+                    <a href="./upload.html" class="btn-cta-secondary">
+                        <span>⬆️</span> Chia sẻ tài liệu
+                    </a>
+                </div>
+                <p class="cta-note">✨ Miễn phí - Không cần thẻ tín dụng</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq">
+        <div class="container">
+            <div class="section-header">
+                <h3>Câu hỏi thường gặp</h3>
+                <p class="section-description">Giải đáp những thắc mắc phổ biến</p>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>DocShare có miễn phí không?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Có, DocShare hoàn toàn miễn phí cho sinh viên. Bạn có thể tải và chia sẻ tài liệu không giới hạn.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Làm thế nào để tải tài liệu?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Đăng nhập vào tài khoản, tìm tài liệu bạn cần và nhấn nút "Tải về". Tài liệu sẽ được tải xuống máy của bạn.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Tôi có thể chia sẻ tài liệu của mình không?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Tất nhiên! Đăng nhập và chọn "Tải lên" trên thanh menu. Điền thông tin và tải tài liệu của bạn lên.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Các định dạng tài liệu được hỗ trợ?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>DocShare hỗ trợ PDF, DOCX, PPTX, XLSX và nhiều định dạng khác. Kích thước tối đa là 50MB.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Tài liệu có được kiểm duyệt không?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Có, tất cả tài liệu đều được kiểm duyệt trước khi công khai để đảm bảo chất lượng và bản quyền.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <div class="newsletter-icon">📧</div>
+                <h3>Đăng ký nhận thông báo</h3>
+                <p>Nhận thông báo về tài liệu mới và các ưu đãi đặc biệt</p>
+                <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                    <input 
+                        type="email" 
+                        placeholder="Nhập email của bạn"
+                        required
+                        id="newsletterEmail"
+                    >
+                    <button type="submit">Đăng ký</button>
+                </form>
+                <p class="newsletter-note">🔒 Chúng tôi tôn trọng quyền riêng tư của bạn</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>📚 DocShare</h4>
+                    <p>Nền tảng chia sẻ tài liệu học tập hàng đầu dành cho sinh viên Việt Nam</p>
+                    <div class="footer-social">
+                        <a href="#" title="Facebook">📘</a>
+                        <a href="#" title="Twitter">🐦</a>
+                        <a href="#" title="Instagram">📷</a>
+                        <a href="#" title="LinkedIn">💼</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Về chúng tôi</h4>
+                    <ul>
+                        <li><a href="./about.html">Giới thiệu</a></li>
+                        <li><a href="./team.html">Đội ngũ</a></li>
+                        <li><a href="./careers.html">Tuyển dụng</a></li>
+                        <li><a href="./blog.html">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Hỗ trợ</h4>
+                    <ul>
+                        <li><a href="./help.html">Trung tâm trợ giúp</a></li>
+                        <li><a href="./contact.html">Liên hệ</a></li>
+                        <li><a href="./faq.html">Câu hỏi thường gặp</a></li>
+                        <li><a href="./feedback.html">Góp ý</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Pháp lý</h4>
+                    <ul>
+                        <li><a href="./terms.html">Điều khoản sử dụng</a></li>
+                        <li><a href="./privacy.html">Chính sách bảo mật</a></li>
+                        <li><a href="./copyright.html">Bản quyền</a></li>
+                        <li><a href="./guidelines.html">Nguyên tắc cộng đồng</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Liên hệ</h4>
+                    <ul class="footer-contact">
+                        <li>📧 contact@docshare.vn</li>
+                        <li>📞 +84 123 456 789</li>
+                        <li>📍 Hà Nội, Việt Nam</li>
+                        <li>🕐 24/7 Hỗ trợ</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 DocShare - Chia sẻ tài liệu học tập. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="./sitemap.html">Sơ đồ trang</a>
+                    <span>•</span>
+                    <a href="./accessibility.html">Khả năng tiếp cận</a>
+                    <span>•</span>
+                    <a href="./cookies.html">Cookie</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()">
+        ↑
+    </button>
+
+    <!-- JavaScript -->
+    <script src="./main.js"></script>
+    <script>
+        // Kiểm tra user đã đăng nhập chưa và hiển thị UI tương ứng
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUserAuthentication();
+        });
+
+        function checkUserAuthentication() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const token = localStorage.getItem('token');
+                
+                const authButtons = document.getElementById('authButtons');
+                const userSection = document.getElementById('userSection');
+                
+                if (user && token) {
+                    // User đã đăng nhập - hiển thị dropdown
+                    authButtons.style.display = 'none';
+                    userSection.style.display = 'flex';
+                    
+                    // Update user info
+                    const userNameHeader = document.getElementById('userNameHeader');
+                    if (userNameHeader) {
+                        const displayName = user.ho_ten || user.email.split('@')[0];
+                        userNameHeader.textContent = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
+                    }
+                    
+                    const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+                    if (dropdownUserEmail) {
+                        dropdownUserEmail.textContent = user.email;
+                    }
+                    
+                    // Show admin link if user is admin
+                    if (user.chuc_vu === 'admin') {
+                        const adminLink = document.getElementById('adminLink');
+                        if (adminLink) {
+                            adminLink.style.display = 'inline-flex';
+                        }
+                    }
+                } else {
+                    // User chưa đăng nhập - hiển thị nút login/register
+                    authButtons.style.display = 'flex';
+                    userSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking authentication:', error);
+                // Nếu có lỗi, hiển thị nút login/register
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('userSection').style.display = 'none';
+            }
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdownMenu');
+            const dropdownBtn = document.querySelector('.user-dropdown-btn');
+            
+            if (dropdown && dropdownBtn) {
+                if (!dropdown.contains(event.target) && !dropdownBtn.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+
+        function logout() {
+            if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                showToast('Đã đăng xuất thành công', 'success');
+                setTimeout(() => {
+                    window.location.href = './index.html';
+                }, 1000);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.querySelector('.nav');
+            if (nav) {
+                nav.classList.toggle('active');
+            }
+        }
+    </script>
+
+    <!-- Chatbot Widget -->
+    <script src="./chatbot-widget.js"></script>
+</body>
+</html>

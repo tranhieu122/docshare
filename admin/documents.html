@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quản lý tài liệu - DocShare">
+    <title>Quản lý tài liệu - Admin - DocShare</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải...</p>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast">
+        <span id="toastMessage"></span>
+        <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" style="text-decoration: none; color: inherit;">
+                    <h1>📚 DocShare - Admin</h1>
+                </a>
+                <span class="logo-subtitle">Quản trị hệ thống</span>
+            </div>
+            <nav class="nav">
+                <a href="./dashboard.html" class="nav-link">
+                    <span class="nav-icon">🎛️</span>
+                    Dashboard
+                </a>
+                <a href="./users.html" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    Người dùng
+                </a>
+                <a href="./documents.html" class="nav-link active">
+                    <span class="nav-icon">📄</span>
+                    Tài liệu
+                </a>
+                <a href="./categories.html" class="nav-link">
+                    <span class="nav-icon">📁</span>
+                    Danh mục
+                </a>
+                <div class="nav-buttons">
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                            <span class="user-icon">👤</span>
+                            <span id="userNameHeader">Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <span class="user-icon">👤</span>
+                                <span id="dropdownUserEmail" style="margin-left: 8px;">admin@example.com</span>
+                            </div>
+                            <div class="dropdown-content-grid">
+                                <a href="./dashboard.html" class="dropdown-item">
+                                    <span class="dropdown-icon">🎛️</span>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="./users.html" class="dropdown-item">
+                                    <span class="dropdown-icon">👥</span>
+                                    <span>Người dùng</span>
+                                </a>
+                                <a href="./documents.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📄</span>
+                                    <span>Tài liệu</span>
+                                </a>
+                                <a href="./categories.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📁</span>
+                                    <span>Danh mục</span>
+                                </a>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button onclick="logout()" class="dropdown-item dropdown-logout">
+                                <span class="dropdown-icon">🚪</span>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Documents Management -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2>📄 Quản lý tài liệu</h2>
+                <p>Quản lý tất cả tài liệu trong hệ thống</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-number" id="totalDocs">0</div>
+                    <div class="stat-label">Tổng tài liệu</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-number" id="totalViews">0</div>
+                    <div class="stat-label">Tổng lượt xem</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⬇️</div>
+                    <div class="stat-number" id="totalDownloads">0</div>
+                    <div class="stat-label">Tổng lượt tải</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✨</div>
+                    <div class="stat-number" id="newDocsToday">0</div>
+                    <div class="stat-label">Mới hôm nay</div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="table-container" style="margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 15px;">
+                    <input type="text" 
+                           id="searchDoc" 
+                           placeholder="Tìm kiếm tài liệu..." 
+                           style="padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;"
+                           aria-label="Tìm kiếm tài liệu">
+                    <select id="filterCategory" 
+                            style="padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;"
+                            aria-label="Lọc theo danh mục">
+                        <option value="">Tất cả danh mục</option>
+                    </select>
+                    <button class="btn" id="searchBtn">
+                        🔍 Tìm kiếm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Documents Table -->
+            <div class="table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Danh sách tài liệu</h3>
+                    <span id="docCount" style="color: #444; font-size: 0.95rem;"></span>
+                </div>
+                <div id="documentsList"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2025 DocShare - Chia sẻ tài liệu học tập. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()">
+        ↑
+    </button>
+
+    <script src="../main.js"></script>
+    <script src="../header-auth.js"></script>
+    <script>
+        // ===================================
+        // USER DROPDOWN TOGGLE
+        // ===================================
+        function toggleUserDropdown() {
+            const menu = document.getElementById('userDropdownMenu');
+            if (menu) {
+                menu.classList.toggle('show');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.user-dropdown');
+            const menu = document.getElementById('userDropdownMenu');
+            if (dropdown && menu && !dropdown.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // ===================================
+        // STATE MANAGEMENT
+        // ===================================
+        let allDocuments = [];
+        let categories = [];
+
+        // ===================================
+        // AUTHENTICATION CHECK
+        // ===================================
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAdminAuth()) {
+                return;
+            }
+            
+            initializePage();
+        });
+
+        function checkAdminAuth() {
+            const user = getUser();
+            const token = getToken();
+            
+            if (!user || !token) {
+                showToast('Vui lòng đăng nhập để tiếp tục', 'error');
+                setTimeout(() => {
+                    window.location.href = '../login.html';
+                }, 1500);
+                return false;
+            }
+            
+            if (user.chuc_vu !== 'admin') {
+                showToast('Bạn không có quyền truy cập trang này!', 'error');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1500);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // ===================================
+        // PAGE INITIALIZATION
+        // ===================================
+        async function initializePage() {
+            setupEventListeners();
+            await loadCategories();
+            await loadDocuments();
+        }
+
+        function setupEventListeners() {
+            // Logout button
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+
+            // Search input
+            const searchInput = document.getElementById('searchDoc');
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(filterAndDisplayDocuments, 300));
+            }
+
+            // Filter select
+            const filterCategory = document.getElementById('filterCategory');
+            if (filterCategory) {
+                filterCategory.addEventListener('change', filterAndDisplayDocuments);
+            }
+
+            // Search button
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) {
+                searchBtn.addEventListener('click', filterAndDisplayDocuments);
+            }
+        }
+
+        // ===================================
+        // LOAD CATEGORIES
+        // ===================================
+        async function loadCategories() {
+            try {
+                const response = await apiGet('/categories/danhmuc');
+                
+                if (response && response.ok) {
+                    categories = await response.json();
+                    populateCategoryFilter();
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        function populateCategoryFilter() {
+            const select = document.getElementById('filterCategory');
+            if (!select) return;
+
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.ma_danh_muc;
+                option.textContent = cat.ten_danh_muc;
+                select.appendChild(option);
+            });
+        }
+
+        // ===================================
+        // LOAD DOCUMENTS
+        // ===================================
+        async function loadDocuments() {
+            showLoading();
+            
+            try {
+                const response = await apiGet('/admin/documents?limit=1000');
+
+                if (response && response.ok) {
+                    const data = await response.json();
+                    allDocuments = Array.isArray(data) ? data : (data.documents || []);
+                    filterAndDisplayDocuments();
+                    updateStats();
+                } else {
+                    throw new Error('Failed to load documents');
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                showToast('Không thể tải danh sách tài liệu', 'error');
+                displayEmptyState('Có lỗi xảy ra khi tải dữ liệu');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // FILTER AND DISPLAY
+        // ===================================
+        function filterAndDisplayDocuments() {
+            const searchInput = document.getElementById('searchDoc');
+            const filterCategory = document.getElementById('filterCategory');
+            
+            if (!searchInput || !filterCategory) return;
+            
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const categoryFilter = filterCategory.value;
+
+            let filtered = allDocuments.filter(doc => {
+                const matchSearch = !searchTerm || 
+                    doc.tieu_de.toLowerCase().includes(searchTerm) ||
+                    (doc.mo_ta && doc.mo_ta.toLowerCase().includes(searchTerm)) ||
+                    (doc.ten_tap && doc.ten_tap.toLowerCase().includes(searchTerm));
+                
+                const matchCategory = !categoryFilter || doc.ma_danh_muc == categoryFilter;
+                
+                return matchSearch && matchCategory;
+            });
+
+            displayDocuments(filtered);
+            updateDocCount(filtered.length, allDocuments.length);
+        }
+
+        function displayDocuments(docs) {
+            const container = document.getElementById('documentsList');
+            
+            if (!container) return;
+
+            if (docs.length === 0) {
+                displayEmptyState('Không tìm thấy tài liệu nào');
+                return;
+            }
+
+            let html = `
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tiêu đề</th>
+                                <th>Người tải</th>
+                                <th>Danh mục</th>
+                                <th>Ngày tải</th>
+                                <th>Lượt xem</th>
+                                <th>Lượt tải</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            docs.forEach(doc => {
+                const date = formatDate(new Date(doc.ngay_tai));
+
+                html += `
+                    <tr>
+                        <td>${doc.ma_tai_lieu}</td>
+                        <td>
+                            <strong>${escapeHtml(doc.tieu_de)}</strong><br>
+                            <small style="color: #444;">${escapeHtml(doc.ten_tap || 'N/A')}</small>
+                        </td>
+                        <td>${escapeHtml(doc.email || 'N/A')}</td>
+                        <td>
+                            <span style="background: rgba(102, 126, 234, 0.1); color: #667eea; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">
+                                ${escapeHtml(doc.ten_danh_muc || 'N/A')}
+                            </span>
+                        </td>
+                        <td>${date}</td>
+                        <td>
+                            <span style="display: flex; align-items: center; gap: 5px;">
+                                👁️ <strong>${formatNumber(doc.so_luot_xem || 0)}</strong>
+                            </span>
+                        </td>
+                        <td>
+                            <span style="display: flex; align-items: center; gap: 5px;">
+                                ⬇️ <strong>${formatNumber(doc.so_luot_tai || 0)}</strong>
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm" 
+                                    onclick="viewDoc(${doc.ma_tai_lieu})" 
+                                    style="background: #3498db;"
+                                    title="Xem chi tiết">
+                                👁️ Xem
+                            </button>
+                            <button class="btn btn-sm btn-danger" 
+                                    onclick="deleteDoc(${doc.ma_tai_lieu}, '${escapeHtml(doc.tieu_de)}')"
+                                    title="Xóa tài liệu">
+                                🗑️ Xóa
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // ===================================
+        // UPDATE STATS
+        // ===================================
+        function updateStats() {
+            const totalDocs = allDocuments.length;
+            const totalViews = allDocuments.reduce((sum, doc) => sum + (doc.so_luot_xem || 0), 0);
+            const totalDownloads = allDocuments.reduce((sum, doc) => sum + (doc.so_luot_tai || 0), 0);
+            
+            const today = new Date().toDateString();
+            const newDocsToday = allDocuments.filter(doc => 
+                new Date(doc.ngay_tai).toDateString() === today
+            ).length;
+
+            animateNumber(document.getElementById('totalDocs'), totalDocs);
+            animateNumber(document.getElementById('totalViews'), totalViews);
+            animateNumber(document.getElementById('totalDownloads'), totalDownloads);
+            animateNumber(document.getElementById('newDocsToday'), newDocsToday);
+        }
+
+        function updateDocCount(filtered, total) {
+            const countElem = document.getElementById('docCount');
+            if (countElem) {
+                if (filtered === total) {
+                    countElem.textContent = `Hiển thị ${total} tài liệu`;
+                } else {
+                    countElem.textContent = `Hiển thị ${filtered} / ${total} tài liệu`;
+                }
+            }
+        }
+
+        // ===================================
+        // VIEW DOCUMENT
+        // ===================================
+        function viewDoc(id) {
+            window.location.href = `../documents/detail.html?id=${id}`;
+        }
+
+        // ===================================
+        // DELETE DOCUMENT
+        // ===================================
+        async function deleteDoc(id, title) {
+            if (!confirm(`Bạn có chắc muốn xóa tài liệu "${title}"?\n\n⚠️ Hành động này không thể hoàn tác!`)) {
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await apiDelete(`/documents/${id}`);
+
+                if (response && response.ok) {
+                    showToast('Xóa tài liệu thành công!', 'success');
+                    await loadDocuments();
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'Xóa thất bại!', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting document:', error);
+                showToast('Có lỗi xảy ra khi xóa!', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // UTILITY FUNCTIONS
+        // ===================================
+        function displayEmptyState(message) {
+            const container = document.getElementById('documentsList');
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📄</div>
+                        <h3>${message}</h3>
+                        <p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function animateNumber(element, target) {
+            if (!element) return;
+            
+            const duration = 1000;
+            const frameDuration = 1000 / 60;
+            const totalFrames = Math.round(duration / frameDuration);
+            const increment = target / totalFrames;
+            
+            let current = 0;
+            let frame = 0;
+            
+            const counter = setInterval(() => {
+                frame++;
+                current += increment;
+                
+                if (frame === totalFrames) {
+                    clearInterval(counter);
+                    current = target;
+                }
+                
+                element.textContent = formatNumber(Math.floor(current));
+            }, frameDuration);
+        }
+    </script>
+
+    <!-- Chatbot Widget -->
+    <script src="../chatbot-widget.js"></script>
+</body>
+</html>

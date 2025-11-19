@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quản lý danh mục - DocShare">
+    <title>Quản lý danh mục - Admin - DocShare</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải...</p>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast">
+        <span id="toastMessage"></span>
+        <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" style="text-decoration: none; color: inherit;">
+                    <h1>📚 DocShare - Admin</h1>
+                </a>
+                <span class="logo-subtitle">Quản trị hệ thống</span>
+            </div>
+            <nav class="nav">
+                <a href="./dashboard.html" class="nav-link">
+                    <span class="nav-icon">🎛️</span>
+                    Dashboard
+                </a>
+                <a href="./users.html" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    Người dùng
+                </a>
+                <a href="./documents.html" class="nav-link">
+                    <span class="nav-icon">📄</span>
+                    Tài liệu
+                </a>
+                <a href="./categories.html" class="nav-link active">
+                    <span class="nav-icon">📁</span>
+                    Danh mục
+                </a>
+                <div class="nav-buttons">
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                            <span class="user-icon">👤</span>
+                            <span id="userNameHeader">Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <span class="user-icon">👤</span>
+                                <span id="dropdownUserEmail" style="margin-left: 8px;">admin@example.com</span>
+                            </div>
+                            <div class="dropdown-content-grid">
+                                <a href="./dashboard.html" class="dropdown-item">
+                                    <span class="dropdown-icon">🎛️</span>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="./users.html" class="dropdown-item">
+                                    <span class="dropdown-icon">👥</span>
+                                    <span>Người dùng</span>
+                                </a>
+                                <a href="./documents.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📄</span>
+                                    <span>Tài liệu</span>
+                                </a>
+                                <a href="./categories.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📁</span>
+                                    <span>Danh mục</span>
+                                </a>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button onclick="logout()" class="dropdown-item dropdown-logout">
+                                <span class="dropdown-icon">🚪</span>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Categories Management -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2>📁 Quản lý danh mục & môn học</h2>
+                <p>Quản lý các danh mục và môn học trong hệ thống</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                
+                <!-- Danh mục -->
+                <div class="table-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>📂 Danh mục</h3>
+                        <button class="btn btn-success" id="addCategoryBtn">
+                            + Thêm danh mục
+                        </button>
+                    </div>
+                    <div id="categoriesList"></div>
+                </div>
+
+                <!-- Môn học -->
+                <div class="table-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>📖 Môn học</h3>
+                        <button class="btn btn-success" id="addSubjectBtn">
+                            + Thêm môn học
+                        </button>
+                    </div>
+                    <div id="subjectsList"></div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2025 DocShare - Chia sẻ tài liệu học tập. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()">
+        ↑
+    </button>
+
+    <!-- Modal Add/Edit Category -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📂 Thêm danh mục mới</h3>
+                <button class="modal-close" onclick="closeCategoryModal()" aria-label="Đóng">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm" onsubmit="saveCategory(event)">
+                    <div class="form-group">
+                        <label for="catName">Tên danh mục *</label>
+                        <input type="text" 
+                               id="catName" 
+                               required 
+                               placeholder="Nhập tên danh mục"
+                               maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="catKhoa">Khoa</label>
+                        <input type="text" 
+                               id="catKhoa" 
+                               placeholder="Nhập tên khoa (tùy chọn)"
+                               maxlength="100">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">
+                            💾 Lưu
+                        </button>
+                        <button type="button" class="btn" onclick="closeCategoryModal()" style="background: #95a5a6;">
+                            ❌ Hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add/Edit Subject -->
+    <div id="subjectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📖 Thêm môn học mới</h3>
+                <button class="modal-close" onclick="closeSubjectModal()" aria-label="Đóng">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="subjectForm" onsubmit="saveSubject(event)">
+                    <div class="form-group">
+                        <label for="subName">Tên môn học *</label>
+                        <input type="text" 
+                               id="subName" 
+                               required 
+                               placeholder="Nhập tên môn học"
+                               maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="subDesc">Mô tả</label>
+                        <textarea id="subDesc" 
+                                  rows="3" 
+                                  placeholder="Nhập mô tả (tùy chọn)"
+                                  maxlength="500"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">
+                            💾 Lưu
+                        </button>
+                        <button type="button" class="btn" onclick="closeSubjectModal()" style="background: #95a5a6;">
+                            ❌ Hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="../header-auth.js"></script>
+    <script>
+        // ===================================
+        // USER DROPDOWN TOGGLE
+        // ===================================
+        function toggleUserDropdown() {
+            const menu = document.getElementById('userDropdownMenu');
+            if (menu) {
+                menu.classList.toggle('show');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.user-dropdown');
+            const menu = document.getElementById('userDropdownMenu');
+            if (dropdown && menu && !dropdown.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // ===================================
+        // AUTHENTICATION CHECK
+        // ===================================
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAdminAuth()) {
+                return;
+            }
+            
+            initializePage();
+        });
+
+        function checkAdminAuth() {
+            const user = getUser();
+            const token = getToken();
+            
+            if (!user || !token) {
+                showToast('Vui lòng đăng nhập để tiếp tục', 'error');
+                setTimeout(() => {
+                    window.location.href = '../login.html';
+                }, 1500);
+                return false;
+            }
+            
+            if (user.chuc_vu !== 'admin') {
+                showToast('Bạn không có quyền truy cập trang này!', 'error');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1500);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // ===================================
+        // PAGE INITIALIZATION
+        // ===================================
+        function initializePage() {
+            setupEventListeners();
+            loadCategories();
+            loadSubjects();
+        }
+
+        function setupEventListeners() {
+            // Logout button
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+
+            // Add buttons
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            if (addCategoryBtn) {
+                addCategoryBtn.addEventListener('click', openAddCategoryModal);
+            }
+
+            const addSubjectBtn = document.getElementById('addSubjectBtn');
+            if (addSubjectBtn) {
+                addSubjectBtn.addEventListener('click', openAddSubjectModal);
+            }
+
+            // Modal close on background click
+            const categoryModal = document.getElementById('categoryModal');
+            if (categoryModal) {
+                categoryModal.addEventListener('click', (e) => {
+                    if (e.target === categoryModal) {
+                        closeCategoryModal();
+                    }
+                });
+            }
+
+            const subjectModal = document.getElementById('subjectModal');
+            if (subjectModal) {
+                subjectModal.addEventListener('click', (e) => {
+                    if (e.target === subjectModal) {
+                        closeSubjectModal();
+                    }
+                });
+            }
+
+            // ESC key to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeCategoryModal();
+                    closeSubjectModal();
+                }
+            });
+        }
+
+        // ===================================
+        // LOAD CATEGORIES
+        // ===================================
+        async function loadCategories() {
+            try {
+                const response = await apiGet('/categories/danhmuc');
+                
+                if (response && response.ok) {
+                    const categories = await response.json();
+                    displayCategories(categories);
+                } else {
+                    throw new Error('Failed to load categories');
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                displayEmptyCategories();
+            }
+        }
+
+        function displayCategories(categories) {
+            const container = document.getElementById('categoriesList');
+            
+            if (!container) return;
+            
+            if (categories.length === 0) {
+                displayEmptyCategories();
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên danh mục</th>
+                            <th>Khoa</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            categories.forEach(cat => {
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(cat.ten_danh_muc)}</strong></td>
+                        <td>${escapeHtml(cat.khoa || '—')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" 
+                                    onclick="deleteCategory(${cat.ma_danh_muc}, '${escapeHtml(cat.ten_danh_muc)}')"
+                                    title="Xóa danh mục">
+                                🗑️ Xóa
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function displayEmptyCategories() {
+            const container = document.getElementById('categoriesList');
+            if (container) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: #444; padding: 40px;">
+                        Chưa có danh mục nào
+                    </p>
+                `;
+            }
+        }
+
+        // ===================================
+        // LOAD SUBJECTS
+        // ===================================
+        async function loadSubjects() {
+            try {
+                const response = await apiGet('/categories/monhoc');
+                
+                if (response && response.ok) {
+                    const subjects = await response.json();
+                    displaySubjects(subjects);
+                } else {
+                    throw new Error('Failed to load subjects');
+                }
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                displayEmptySubjects();
+            }
+        }
+
+        function displaySubjects(subjects) {
+            const container = document.getElementById('subjectsList');
+            
+            if (!container) return;
+            
+            if (subjects.length === 0) {
+                displayEmptySubjects();
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên môn học</th>
+                            <th>Mô tả</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            subjects.forEach(sub => {
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(sub.ten_mon_hoc)}</strong></td>
+                        <td>${escapeHtml(sub.mo_ta || '—')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" 
+                                    onclick="deleteSubject(${sub.ma_mon_hoc}, '${escapeHtml(sub.ten_mon_hoc)}')"
+                                    title="Xóa môn học">
+                                🗑️ Xóa
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function displayEmptySubjects() {
+            const container = document.getElementById('subjectsList');
+            if (container) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: #444; padding: 40px;">
+                        Chưa có môn học nào
+                    </p>
+                `;
+            }
+        }
+
+        // ===================================
+        // CATEGORY MODAL FUNCTIONS
+        // ===================================
+        function openAddCategoryModal() {
+            document.getElementById('catName').value = '';
+            document.getElementById('catKhoa').value = '';
+            
+            const modal = document.getElementById('categoryModal');
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // Focus on first input
+                setTimeout(() => {
+                    document.getElementById('catName').focus();
+                }, 100);
+            }
+        }
+
+        function closeCategoryModal() {
+            const modal = document.getElementById('categoryModal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // ===================================
+        // SUBJECT MODAL FUNCTIONS
+        // ===================================
+        function openAddSubjectModal() {
+            document.getElementById('subName').value = '';
+            document.getElementById('subDesc').value = '';
+            
+            const modal = document.getElementById('subjectModal');
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // Focus on first input
+                setTimeout(() => {
+                    document.getElementById('subName').focus();
+                }, 100);
+            }
+        }
+
+        function closeSubjectModal() {
+            const modal = document.getElementById('subjectModal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // ===================================
+        // SAVE CATEGORY
+        // ===================================
+        async function saveCategory(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('catName').value.trim();
+            const khoa = document.getElementById('catKhoa').value.trim();
+
+            if (!name) {
+                showToast('Vui lòng nhập tên danh mục', 'error');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await apiPost('/categories/danhmuc', {
+                    ten_danh_muc: name,
+                    khoa: khoa || null
+                });
+
+                if (response && response.ok) {
+                    showToast('Thêm danh mục thành công!', 'success');
+                    closeCategoryModal();
+                    await loadCategories();
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'Thêm danh mục thất bại!', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving category:', error);
+                showToast('Có lỗi xảy ra!', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // SAVE SUBJECT
+        // ===================================
+        async function saveSubject(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('subName').value.trim();
+            const desc = document.getElementById('subDesc').value.trim();
+
+            if (!name) {
+                showToast('Vui lòng nhập tên môn học', 'error');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await apiPost('/categories/monhoc', {
+                    ten_mon_hoc: name,
+                    mo_ta: desc || null
+                });
+
+                if (response && response.ok) {
+                    showToast('Thêm môn học thành công!', 'success');
+                    closeSubjectModal();
+                    await loadSubjects();
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'Thêm môn học thất bại!', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving subject:', error);
+                showToast('Có lỗi xảy ra!', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // DELETE CATEGORY
+        // ===================================
+        async function deleteCategory(id, name) {
+            if (!confirm(`Bạn có chắc muốn xóa danh mục "${name}"?\n\n⚠️ Hành động này không thể hoàn tác!`)) {
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await apiDelete(`/categories/danhmuc/${id}`);
+
+                if (response && response.ok) {
+                    showToast('Xóa danh mục thành công!', 'success');
+                    await loadCategories();
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'Xóa thất bại!', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                showToast('Có lỗi xảy ra!', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // DELETE SUBJECT
+        // ===================================
+        async function deleteSubject(id, name) {
+            if (!confirm(`Bạn có chắc muốn xóa môn học "${name}"?\n\n⚠️ Hành động này không thể hoàn tác!`)) {
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await apiDelete(`/categories/monhoc/${id}`);
+
+                if (response && response.ok) {
+                    showToast('Xóa môn học thành công!', 'success');
+                    await loadSubjects();
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'Xóa thất bại!', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting subject:', error);
+                showToast('Có lỗi xảy ra!', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // UTILITY FUNCTIONS
+        // ===================================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+
+    <!-- Chatbot Widget -->
+    <script src="../chatbot-widget.js"></script>
+</body>
+</html>

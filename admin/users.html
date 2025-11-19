@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard - DocShare">
+    <title>Dashboard - DocShare</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+</head>
+<body>
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast">
+        <span id="toastMessage"></span>
+        <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" style="text-decoration: none; color: inherit;">
+                    <h1>📚 DocShare - Admin</h1>
+                </a>
+                <span class="logo-subtitle">Quản trị hệ thống</span>
+            </div>
+            <nav class="nav">
+                <a href="./dashboard.html" class="nav-link">
+                    <span class="nav-icon">🎛️</span>
+                    Dashboard
+                </a>
+                <a href="./users.html" class="nav-link active">
+                    <span class="nav-icon">👥</span>
+                    Người dùng
+                </a>
+                <a href="./documents.html" class="nav-link">
+                    <span class="nav-icon">📄</span>
+                    Tài liệu
+                </a>
+                <a href="./categories.html" class="nav-link">
+                    <span class="nav-icon">📁</span>
+                    Danh mục
+                </a>
+                <div class="nav-buttons">
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                            <span class="user-icon">👤</span>
+                            <span id="userNameHeader">Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <span class="user-icon">👤</span>
+                                <span id="dropdownUserEmail" style="margin-left: 8px;">admin@example.com</span>
+                            </div>
+                            <div class="dropdown-content-grid">
+                                <a href="./dashboard.html" class="dropdown-item">
+                                    <span class="dropdown-icon">🎛️</span>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="./users.html" class="dropdown-item">
+                                    <span class="dropdown-icon">👥</span>
+                                    <span>Người dùng</span>
+                                </a>
+                                <a href="./documents.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📄</span>
+                                    <span>Tài liệu</span>
+                                </a>
+                                <a href="./categories.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📁</span>
+                                    <span>Danh mục</span>
+                                </a>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button onclick="logout()" class="dropdown-item dropdown-logout">
+                                <span class="dropdown-icon">🚪</span>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Dashboard Hero -->
+    <section class="hero" style="padding: 60px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <div class="hero-content" style="text-align: center;">
+                <h2 class="hero-title" style="color: white;">
+                    Xin chào, <span id="welcomeUserName">Bạn</span>! 👋
+                </h2>
+                <p class="hero-description" style="color: rgba(255,255,255,0.9);">
+                    Chào mừng trở lại với DocShare
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="statistics" style="margin-top: -40px;">
+        <div class="container">
+            <div class="stats-wrapper">
+                <div class="stat-item">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-number" id="myDocuments">0</div>
+                    <div class="stat-label">Tài liệu của tôi</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">⬇️</div>
+                    <div class="stat-number" id="totalDownloads">0</div>
+                    <div class="stat-label">Lượt tải xuống</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-number" id="totalViews">0</div>
+                    <div class="stat-label">Lượt xem</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-number" id="avgRating">0</div>
+                    <div class="stat-label">Đánh giá TB</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="categories" style="padding: 40px 0;">
+        <div class="container">
+            <div class="section-header">
+                <h3>⚡ Thao tác nhanh</h3>
+                <p class="section-description">Các tính năng thường dùng</p>
+            </div>
+            
+            <div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <a href="./upload.html" class="category-card" style="text-decoration: none; cursor: pointer; transition: all 0.3s;">
+                    <div class="category-icon" style="font-size: 3rem;">⬆️</div>
+                    <h4>Tải lên tài liệu</h4>
+                    <p>Chia sẻ tài liệu của bạn</p>
+                </a>
+
+                <a href="./my-documents.html" class="category-card" style="text-decoration: none; cursor: pointer;">
+                    <div class="category-icon" style="font-size: 3rem;">📄</div>
+                    <h4>Tài liệu của tôi</h4>
+                    <p>Quản lý tài liệu đã tải lên</p>
+                </a>
+
+                <a href="../documents/list.html" class="category-card" style="text-decoration: none; cursor: pointer;">
+                    <div class="category-icon" style="font-size: 3rem;">🔍</div>
+                    <h4>Khám phá</h4>
+                    <p>Tìm kiếm tài liệu mới</p>
+                </a>
+
+                <a href="./profile.html" class="category-card" style="text-decoration: none; cursor: pointer;">
+                    <div class="category-icon" style="font-size: 3rem;">⚙️</div>
+                    <h4>Cài đặt</h4>
+                    <p>Chỉnh sửa thông tin cá nhân</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- My Recent Documents -->
+    <section class="recent-docs">
+        <div class="container">
+            <div class="section-header">
+                <h3>📚 Tài liệu gần đây của bạn</h3>
+                <p class="section-description">Tài liệu bạn vừa tải lên</p>
+                <div class="section-actions">
+                    <a href="./my-documents.html" class="btn-view-all" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #667eea; color: white; border-radius: 8px; text-decoration: none;">
+                        Xem tất cả
+                        <span>→</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="docs-grid" id="myRecentDocs">
+                <!-- Documents will be loaded here -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">📚</div>
+                    <h3>Chưa có tài liệu nào</h3>
+                    <p>Bắt đầu tải lên tài liệu của bạn ngay!</p>
+                    <a href="./upload.html" class="btn" style="margin-top: 20px; display: inline-block;">
+                        <span>⬆️</span> Tải lên tài liệu
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Activities -->
+    <section class="categories" style="background: #f8f9fa;">
+        <div class="container">
+            <div class="section-header">
+                <h3>📊 Hoạt động gần đây</h3>
+                <p class="section-description">Các hoạt động mới nhất của bạn</p>
+            </div>
+            
+            <div id="recentActivities" style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <!-- Activities will be loaded here -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <h3>Chưa có hoạt động nào</h3>
+                    <p>Hoạt động của bạn sẽ được hiển thị ở đây</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Documents -->
+    <section class="featured-docs">
+        <div class="container">
+            <div class="section-header">
+                <h3>🔥 Tài liệu đang thịnh hành</h3>
+                <p class="section-description">Những tài liệu được tải nhiều nhất</p>
+            </div>
+
+            <div class="featured-carousel">
+                <button class="carousel-btn prev" onclick="slideCarousel(-1)">
+                    ‹
+                </button>
+                <div class="carousel-container" id="popularCarousel">
+                    <!-- Popular documents will be loaded here -->
+                </div>
+                <button class="carousel-btn next" onclick="slideCarousel(1)">
+                    ›
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>📚 DocShare</h4>
+                    <p>Nền tảng chia sẻ tài liệu học tập hàng đầu dành cho sinh viên Việt Nam</p>
+                    <div class="footer-social">
+                        <a href="#" title="Facebook">📘</a>
+                        <a href="#" title="Twitter">🐦</a>
+                        <a href="#" title="Instagram">📷</a>
+                        <a href="#" title="LinkedIn">💼</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Về chúng tôi</h4>
+                    <ul>
+                        <li><a href="../about.html">Giới thiệu</a></li>
+                        <li><a href="../team.html">Đội ngũ</a></li>
+                        <li><a href="../careers.html">Tuyển dụng</a></li>
+                        <li><a href="../blog.html">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Hỗ trợ</h4>
+                    <ul>
+                        <li><a href="../help.html">Trung tâm trợ giúp</a></li>
+                        <li><a href="../contact.html">Liên hệ</a></li>
+                        <li><a href="../faq.html">Câu hỏi thường gặp</a></li>
+                        <li><a href="../feedback.html">Góp ý</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Pháp lý</h4>
+                    <ul>
+                        <li><a href="../terms.html">Điều khoản sử dụng</a></li>
+                        <li><a href="../privacy.html">Chính sách bảo mật</a></li>
+                        <li><a href="../copyright.html">Bản quyền</a></li>
+                        <li><a href="../guidelines.html">Nguyên tắc cộng đồng</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Liên hệ</h4>
+                    <ul class="footer-contact">
+                        <li>📧 contact@docshare.vn</li>
+                        <li>📞 +84 123 456 789</li>
+                        <li>📍 Hà Nội, Việt Nam</li>
+                        <li>🕐 24/7 Hỗ trợ</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 DocShare - Chia sẻ tài liệu học tập. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="../sitemap.html">Sơ đồ trang</a>
+                    <span>•</span>
+                    <a href="../accessibility.html">Khả năng tiếp cận</a>
+                    <span>•</span>
+                    <a href="../cookies.html">Cookie</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()">
+        ↑
+    </button>
+
+    <!-- JavaScript -->
+    <script src="../main.js"></script>
+    <script>
+        // ===================================
+        // GLOBAL VARIABLES
+        // ===================================
+        let currentUser = null;
+
+        // ===================================
+        // AUTHENTICATION CHECK
+        // ===================================
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) {
+                return;
+            }
+            
+            currentUser = getUser();
+            initializePage();
+        });
+
+        function checkAuth() {
+            const user = getUser();
+            const token = getToken();
+            
+            if (!user || !token) {
+                showToast('Vui lòng đăng nhập để tiếp tục', 'error');
+                setTimeout(() => {
+                    window.location.href = '../login.html';
+                }, 1500);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // ===================================
+        // PAGE INITIALIZATION
+        // ===================================
+        function initializePage() {
+            updateUserInfo();
+            loadDashboardData();
+            setupEventListeners();
+        }
+
+        function updateUserInfo() {
+            // Update header
+            const userNameHeader = document.getElementById('userNameHeader');
+            if (userNameHeader && currentUser) {
+                const displayName = currentUser.ho_ten || currentUser.email.split('@')[0];
+                userNameHeader.textContent = displayName.length > 20 ? 
+                    displayName.substring(0, 20) + '...' : displayName;
+            }
+            
+            const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+            if (dropdownUserEmail && currentUser) {
+                dropdownUserEmail.textContent = currentUser.email;
+            }
+            
+            // Update welcome message
+            const welcomeUserName = document.getElementById('welcomeUserName');
+            if (welcomeUserName && currentUser) {
+                const displayName = currentUser.ho_ten || currentUser.email.split('@')[0];
+                welcomeUserName.textContent = displayName;
+            }
+            
+            // Show admin link if user is admin
+            if (currentUser && currentUser.chuc_vu === 'admin') {
+                const adminLink = document.getElementById('adminLink');
+                if (adminLink) {
+                    adminLink.style.display = 'inline-flex';
+                }
+            }
+        }
+
+        function setupEventListeners() {
+            // User dropdown toggle
+            const dropdownBtn = document.querySelector('.user-dropdown-btn');
+            if (dropdownBtn) {
+                dropdownBtn.addEventListener('click', toggleUserDropdown);
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.querySelector('.user-dropdown');
+                const menu = document.getElementById('userDropdownMenu');
+                if (dropdown && menu && !dropdown.contains(event.target)) {
+                    menu.classList.remove('show');
+                }
+            });
+        }
+
+        // ===================================
+        // LOAD DASHBOARD DATA
+        // ===================================
+        async function loadDashboardData() {
+            showLoading();
+            
+            try {
+                await Promise.all([
+                    loadUserStats(),
+                    loadRecentDocuments(),
+                    loadPopularDocuments(),
+                    loadRecentActivities()
+                ]);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Có lỗi xảy ra khi tải dữ liệu', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // LOAD USER STATS
+        // ===================================
+        async function loadUserStats() {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/users/me/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load stats');
+                }
+
+                const stats = await response.json();
+                
+                // Animate numbers
+                animateNumber(document.getElementById('myDocuments'), stats.total_documents || 0);
+                animateNumber(document.getElementById('totalDownloads'), stats.total_downloads || 0);
+                animateNumber(document.getElementById('totalViews'), stats.total_views || 0);
+                
+                const avgRating = stats.average_rating || 0;
+                animateNumber(document.getElementById('avgRating'), avgRating, true);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // Set default values on error
+                document.getElementById('myDocuments').textContent = '0';
+                document.getElementById('totalDownloads').textContent = '0';
+                document.getElementById('totalViews').textContent = '0';
+                document.getElementById('avgRating').textContent = '0';
+            }
+        }
+
+        // ===================================
+        // LOAD RECENT DOCUMENTS
+        // ===================================
+        async function loadRecentDocuments() {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/users/me/documents?limit=6`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load documents');
+                }
+
+                const documents = await response.json();
+                displayRecentDocuments(documents);
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                displayEmptyDocuments();
+            }
+        }
+
+        function displayRecentDocuments(documents) {
+            const container = document.getElementById('myRecentDocs');
+            
+            if (!container) return;
+
+            if (!documents || documents.length === 0) {
+                displayEmptyDocuments();
+                return;
+            }
+
+            let html = '';
+            
+            documents.slice(0, 6).forEach(doc => {
+                const date = formatDate(new Date(doc.ngay_tai_len || doc.created_at));
+                
+                html += `
+                    <div class="doc-card">
+                        <div class="doc-header">
+                            <span class="doc-type">${getFileExtension(doc.duong_dan_file)}</span>
+                            <button class="doc-favorite" onclick="toggleFavorite(this)">
+                                ♡
+                            </button>
+                        </div>
+                        <div class="doc-thumbnail">
+                            <img src="${doc.thumbnail || '../images/default-doc.jpg'}" 
+                                 alt="Thumbnail" 
+                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23667eea%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📄%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="doc-body">
+                            <h4>${escapeHtml(doc.tieu_de || 'Không có tiêu đề')}</h4>
+                            <p class="doc-description">${escapeHtml(doc.mo_ta || 'Không có mô tả')}</p>
+                            <div class="doc-info">
+                                <span class="doc-date">📅 ${date}</span>
+                            </div>
+                            <div class="doc-stats">
+                                <span title="Lượt xem">👁️ ${doc.luot_xem || 0}</span>
+                                <span title="Lượt tải">⬇️ ${doc.luot_tai || 0}</span>
+                                <span title="Đánh giá">⭐ ${doc.diem_trung_binh || 0}</span>
+                            </div>
+                            <div class="doc-actions">
+                                <a href="../documents/view.html?id=${doc.ma_tai_lieu}" class="btn-view">
+                                    <span>👁️</span> Xem
+                                </a>
+                                <a href="./edit-document.html?id=${doc.ma_tai_lieu}" class="btn" style="background: #f39c12;">
+                                    <span>✏️</span> Sửa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function displayEmptyDocuments() {
+            const container = document.getElementById('myRecentDocs');
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📚</div>
+                        <h3>Chưa có tài liệu nào</h3>
+                        <p>Bắt đầu tải lên tài liệu của bạn ngay!</p>
+                        <a href="./upload.html" class="btn" style="margin-top: 20px; display: inline-block;">
+                            <span>⬆️</span> Tải lên tài liệu
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        // ===================================
+        // LOAD POPULAR DOCUMENTS
+        // ===================================
+        async function loadPopularDocuments() {
+            try {
+                const response = await fetch(`${API_URL}/documents?sort=popular&limit=6`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load popular documents');
+                }
+
+                const documents = await response.json();
+                displayPopularDocuments(documents);
+            } catch (error) {
+                console.error('Error loading popular documents:', error);
+            }
+        }
+
+        function displayPopularDocuments(documents) {
+            const container = document.getElementById('popularCarousel');
+            
+            if (!container || !documents || documents.length === 0) return;
+
+            let html = '';
+            
+            documents.slice(0, 6).forEach(doc => {
+                html += `
+                    <div class="featured-card">
+                        <div class="featured-badge">🔥 Thịnh hành</div>
+                        <div class="featured-image">
+                            <img src="${doc.thumbnail || '../images/default-doc.jpg'}" 
+                                 alt="Tài liệu nổi bật" 
+                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22%3E%3Crect fill=%22%23667eea%22 width=%22200%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22white%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📚%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="featured-content">
+                            <h4>${escapeHtml(doc.tieu_de || 'Không có tiêu đề')}</h4>
+                            <p class="featured-author">👤 ${escapeHtml(doc.nguoi_dung?.email || 'Ẩn danh')}</p>
+                            <div class="featured-meta">
+                                <span>⬇️ ${doc.luot_tai || 0} lượt tải</span>
+                                <span>⭐ ${doc.diem_trung_binh || 0}/5</span>
+                            </div>
+                            <a href="../documents/view.html?id=${doc.ma_tai_lieu}" class="btn" style="margin-top: 10px; width: 100%;">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ===================================
+        // LOAD RECENT ACTIVITIES
+        // ===================================
+        async function loadRecentActivities() {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/users/me/activities?limit=10`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load activities');
+                }
+
+                const activities = await response.json();
+                displayRecentActivities(activities);
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                displayEmptyActivities();
+            }
+        }
+
+        function displayRecentActivities(activities) {
+            const container = document.getElementById('recentActivities');
+            
+            if (!container) return;
+
+            if (!activities || activities.length === 0) {
+                displayEmptyActivities();
+                return;
+            }
+
+            let html = '<div class="activity-list">';
+            
+            activities.forEach(activity => {
+                const date = formatDate(new Date(activity.created_at));
+                const icon = getActivityIcon(activity.type);
+                
+                html += `
+                    <div class="activity-item" style="display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #e9ecef;">
+                        <div style="font-size: 2rem; margin-right: 15px;">${icon}</div>
+                        <div style="flex: 1;">
+                            <p style="margin: 0; font-weight: 600;">${escapeHtml(activity.description)}</p>
+                            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 0.9rem;">${date}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayEmptyActivities() {
+            const container = document.getElementById('recentActivities');
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h3>Chưa có hoạt động nào</h3>
+                        <p>Hoạt động của bạn sẽ được hiển thị ở đây</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getActivityIcon(type) {
+            const icons = {
+                'upload': '⬆️',
+                'download': '⬇️',
+                'view': '👁️',
+                'comment': '💬',
+                'rating': '⭐',
+                'edit': '✏️',
+                'delete': '🗑️'
+            };
+            return icons[type] || '📌';
+        }
+
+        // ===================================
+        // UTILITY FUNCTIONS
+        // ===================================
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function getUser() {
+            try {
+                return JSON.parse(localStorage.getItem('user'));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        function logout() {
+            if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                showToast('Đã đăng xuất thành công', 'success');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.querySelector('.nav');
+            if (nav) {
+                nav.classList.toggle('active');
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getFileExtension(filename) {
+            if (!filename) return 'FILE';
+            const ext = filename.split('.').pop().toUpperCase();
+            return ext || 'FILE';
+        }
+
+        function animateNumber(element, target, isDecimal = false) {
+            if (!element) return;
+            
+            const duration = 1000;
+            const frameDuration = 1000 / 60;
+            const totalFrames = Math.round(duration / frameDuration);
+            const increment = target / totalFrames;
+            
+            let current = 0;
+            let frame = 0;
+            
+            const counter = setInterval(() => {
+                frame++;
+                current += increment;
+                
+                if (frame === totalFrames) {
+                    clearInterval(counter);
+                    current = target;
+                }
+                
+                if (isDecimal) {
+                    element.textContent = current.toFixed(1);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, frameDuration);
+        }
+
+        function toggleFavorite(button) {
+            button.classList.toggle('active');
+            const isFavorite = button.classList.contains('active');
+            button.textContent = isFavorite ? '♥' : '♡';
+            
+            showToast(
+                isFavorite ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích',
+                'success'
+            );
+        }
+
+        // Carousel functionality
+        let currentSlide = 0;
+        
+        function slideCarousel(direction) {
+            const carousel = document.getElementById('popularCarousel');
+            if (!carousel) return;
+            
+            const cards = carousel.querySelectorAll('.featured-card');
+            if (cards.length === 0) return;
+            
+            currentSlide += direction;
+            
+            if (currentSlide < 0) {
+                currentSlide = cards.length - 1;
+            } else if (currentSlide >= cards.length) {
+                currentSlide = 0;
+            }
+            
+            const offset = currentSlide * -100;
+            carousel.style.transform = `translateX(${offset}%)`;
+        }
+    </script>
+
+    <!-- Chatbot Widget -->
+    <script src="../chatbot-widget.js"></script>
+</body>
+</html>

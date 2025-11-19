@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Danh sách tài liệu - DocShare">
+    <title>Danh sách tài liệu | DocShare</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast">
+        <span id="toastMessage"></span>
+        <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="../index.html" style="text-decoration: none; color: inherit;">
+                    <h1>📚 DocShare</h1>
+                </a>
+                <span class="logo-subtitle">Học tập & Chia sẻ</span>
+            </div>
+            <nav class="nav">
+                <a href="../index.html" class="nav-link">
+                    <span class="nav-icon">🏠</span>
+                    Trang chủ
+                </a>
+                <a href="./list.html" class="nav-link">
+                    <span class="nav-icon">🔍</span>
+                    Khám phá
+                </a>
+                <div class="nav-buttons" id="authButtons">
+                    <a href="../login.html" class="btn-login">
+                        <span>🔑</span> Đăng nhập
+                    </a>
+                    <a href="../register.html" class="btn-register">
+                        <span>📝</span> Đăng ký
+                    </a>
+                </div>
+                <!-- User Dropdown (chỉ hiện khi đã đăng nhập) -->
+                <div class="nav-buttons" id="userSection" style="display: none;">
+                    <a href="../admin/dashboard.html" id="adminLink" class="btn-danger" style="display: none;">
+                        <span>🔑</span> Quản trị
+                    </a>
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                            <span class="user-icon">👤</span>
+                            <span id="userNameHeader">Người dùng</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <span class="user-icon">👤</span>
+                                <span id="dropdownUserEmail" style="margin-left: 8px;">email@example.com</span>
+                            </div>
+                            <div class="dropdown-content-grid">
+                                <a href="../sinhvien/home.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📊</span>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="../sinhvien/my-documents.html" class="dropdown-item">
+                                    <span class="dropdown-icon">📄</span>
+                                    <span>Tài liệu của tôi</span>
+                                </a>
+                                <a href="../sinhvien/upload.html" class="dropdown-item">
+                                    <span class="dropdown-icon">⬆️</span>
+                                    <span>Tải lên</span>
+                                </a>
+                                <a href="../sinhvien/profile.html" class="dropdown-item">
+                                    <span class="dropdown-icon">⚙️</span>
+                                    <span>Cài đặt</span>
+                                </a>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button onclick="logout()" class="dropdown-item dropdown-logout">
+                                <span class="dropdown-icon">🚪</span>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="dashboard">
+        <div class="container">
+            <!-- Filter Section -->
+            <div class="table-container" style="margin-bottom: 30px;">
+                <h3>🔍 Tìm kiếm và lọc tài liệu</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" id="searchQuery" placeholder="Tìm kiếm tài liệu..." style="width: 100%;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <select id="filterCategory" style="width: 100%;">
+                            <option value="">-- Tất cả danh mục --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <select id="filterSubject" style="width: 100%;">
+                            <option value="">-- Tất cả môn học --</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn" onclick="filterDocuments()" style="height: 48px;">Lọc</button>
+                </div>
+            </div>
+
+            <!-- Documents List -->
+            <div class="table-container">
+                <h3>📚 Danh sách tài liệu (<span id="docCount">0</span>)</h3>
+                <div id="documentsList" class="docs-grid" style="margin-top: 20px;"></div>
+                
+                <!-- Pagination -->
+                <div id="pagination" style="text-align: center; margin-top: 30px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>📚 DocShare</h4>
+                    <p>Nền tảng chia sẻ tài liệu học tập hàng đầu cho sinh viên Việt Nam</p>
+                    <div class="footer-social">
+                        <a href="#" title="Facebook">📘</a>
+                        <a href="#" title="Twitter">🐦</a>
+                        <a href="#" title="Instagram">📷</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Liên kết nhanh</h4>
+                    <ul>
+                        <li><a href="../sinhvien/home.html">Trang chủ</a></li>
+                        <li><a href="../sinhvien/upload.html">Tải lên</a></li>
+                        <li><a href="../sinhvien/my-documents.html">Tài liệu</a></li>
+                        <li><a href="../sinhvien/profile.html">Hồ sơ</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Hỗ trợ</h4>
+                    <ul>
+                        <li><a href="../help.html">Trợ giúp</a></li>
+                        <li><a href="../contact.html">Liên hệ</a></li>
+                        <li><a href="../faq.html">FAQ</a></li>
+                        <li><a href="../feedback.html">Góp ý</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Liên hệ</h4>
+                    <ul class="footer-contact">
+                        <li>📧 support@docshare.vn</li>
+                        <li>📞 +84 123 456 789</li>
+                        <li>📍 Hà Nội, Việt Nam</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 DocShare. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button id="backToTop" class="back-to-top" onclick="scrollToTop()">↑</button>
+
+    <script src="../main.js"></script>
+    <script src="../header-auth.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentPage = 1;
+        const docsPerPage = 12;
+        let allDocuments = [];
+        let filteredDocuments = [];
+
+        // ===================================
+        // INITIALIZATION
+        // ===================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            loadFilters();
+            loadDocuments();
+            setupEventListeners();
+        });
+
+        function checkAuthentication() {
+            const user = getUser();
+            const token = getToken();
+            const authButtons = document.getElementById('authButtons');
+            const userSection = document.getElementById('userSection');
+            
+            if (!user || !token) {
+                // Show login buttons, hide user section
+                if (authButtons) authButtons.style.display = 'flex';
+                if (userSection) userSection.style.display = 'none';
+            } else {
+                // Hide login buttons, show user section
+                if (authButtons) authButtons.style.display = 'none';
+                if (userSection) userSection.style.display = 'flex';
+
+                // Update dropdown user info
+                const userNameHeader = document.getElementById('userNameHeader');
+                if (userNameHeader) {
+                    const displayName = user.ho_ten || user.email.split('@')[0];
+                    userNameHeader.textContent = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
+                }
+
+                const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+                if (dropdownUserEmail) {
+                    dropdownUserEmail.textContent = user.email;
+                }
+
+                // Show admin link if user is admin
+                if (user.chuc_vu === 'admin') {
+                    const adminLink = document.getElementById('adminLink');
+                    if (adminLink) {
+                        adminLink.style.display = 'inline-flex';
+                    }
+                }
+            }
+        }
+
+        function setupEventListeners() {
+            // Enter để search
+            document.getElementById('searchQuery').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    filterDocuments();
+                }
+            });
+
+            // Back to top button
+            window.addEventListener('scroll', function() {
+                const backToTop = document.getElementById('backToTop');
+                if (backToTop) {
+                    backToTop.classList.toggle('show', window.pageYOffset > 300);
+                }
+            });
+        }
+
+        // ===================================
+        // LOAD FILTERS
+        // ===================================
+
+        async function loadFilters() {
+            try {
+                const [catRes, subRes] = await Promise.all([
+                    fetch(`${API_URL}/categories/danhmuc`),
+                    fetch(`${API_URL}/categories/monhoc`)
+                ]);
+
+                if (catRes.ok) {
+                    const categories = await catRes.json();
+                    const select = document.getElementById('filterCategory');
+                    categories.forEach(cat => {
+                        select.innerHTML += `<option value="${cat.ma_danh_muc}">${cat.ten_danh_muc}</option>`;
+                    });
+                }
+
+                if (subRes.ok) {
+                    const subjects = await subRes.json();
+                    const select = document.getElementById('filterSubject');
+                    subjects.forEach(sub => {
+                        select.innerHTML += `<option value="${sub.ma_mon_hoc}">${sub.ten_mon_hoc}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading filters:', error);
+            }
+        }
+
+        // ===================================
+        // LOAD DOCUMENTS
+        // ===================================
+
+        async function loadDocuments() {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_URL}/documents`);
+                if (response.ok) {
+                    allDocuments = await response.json();
+                    
+                    // Kiểm tra URL params
+                    const searchParam = getUrlParameter('search');
+                    const categoryParam = getUrlParameter('category');
+                    
+                    if (searchParam) {
+                        document.getElementById('searchQuery').value = searchParam;
+                    }
+                    if (categoryParam) {
+                        document.getElementById('filterCategory').value = categoryParam;
+                    }
+                    
+                    filterDocuments();
+                } else {
+                    document.getElementById('documentsList').innerHTML = 
+                        '<p style="text-align: center; color: #444; font-weight: 600;">Không thể tải danh sách tài liệu</p>';
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                document.getElementById('documentsList').innerHTML = 
+                    '<p style="text-align: center; color: #e74c3c; font-weight: 600;">Có lỗi xảy ra khi tải tài liệu</p>';
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ===================================
+        // FILTER DOCUMENTS
+        // ===================================
+
+        function filterDocuments() {
+            const searchQuery = document.getElementById('searchQuery').value.toLowerCase();
+            const categoryId = document.getElementById('filterCategory').value;
+            const subjectId = document.getElementById('filterSubject').value;
+
+            filteredDocuments = allDocuments.filter(doc => {
+                let match = true;
+
+                if (searchQuery) {
+                    match = match && (
+                        doc.tieu_de.toLowerCase().includes(searchQuery) ||
+                        (doc.mo_ta && doc.mo_ta.toLowerCase().includes(searchQuery))
+                    );
+                }
+
+                if (categoryId) {
+                    match = match && doc.ma_danh_muc == categoryId;
+                }
+
+                if (subjectId) {
+                    match = match && doc.ma_mon_hoc == subjectId;
+                }
+
+                return match;
+            });
+
+            document.getElementById('docCount').textContent = filteredDocuments.length;
+            currentPage = 1;
+            displayPage();
+        }
+
+        // ===================================
+        // DISPLAY PAGE
+        // ===================================
+
+        function displayPage() {
+            const start = (currentPage - 1) * docsPerPage;
+            const end = start + docsPerPage;
+            const pageDocs = filteredDocuments.slice(start, end);
+
+            const container = document.getElementById('documentsList');
+            displayDocuments(pageDocs, container);
+
+            // Pagination
+            displayPagination();
+        }
+
+        function displayPagination() {
+            const totalPages = Math.ceil(filteredDocuments.length / docsPerPage);
+            const container = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">';
+
+            // Previous
+            if (currentPage > 1) {
+                html += `<button class="btn btn-sm" onclick="changePage(${currentPage - 1})">← Trước</button>`;
+            }
+
+            // Pages
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<button class="btn btn-sm" style="background: #667eea;">${i}</button>`;
+                } else if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `<button class="btn btn-sm" onclick="changePage(${i})">${i}</button>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += `<span style="padding: 0 10px; font-weight: 600;">...</span>`;
+                }
+            }
+
+            // Next
+            if (currentPage < totalPages) {
+                html += `<button class="btn btn-sm" onclick="changePage(${currentPage + 1})">Sau →</button>`;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function changePage(page) { 
+            currentPage = page;
+            displayPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===================================
+        // UTILITY FUNCTIONS
+        // ===================================
+
+        function getUser() {
+            try {
+                return JSON.parse(localStorage.getItem('user'));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function showLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('notificationToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            if (toast && toastMessage) {
+                toastMessage.textContent = message;
+                toast.className = 'notification-toast show ' + type;
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        }
+
+        function closeToast() {
+            const toast = document.getElementById('notificationToast');
+            if (toast) toast.classList.remove('show');
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.querySelector('.nav');
+            if (nav) nav.classList.toggle('active');
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdownMenu');
+            const dropdownBtn = document.querySelector('.user-dropdown-btn');
+            
+            if (dropdown && dropdownBtn) {
+                if (!dropdown.contains(event.target) && !dropdownBtn.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function logout() {
+            if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                showToast('Đã đăng xuất thành công', 'success');
+                setTimeout(() => window.location.href = '../index.html', 1000);
+            }
+        }
+    </script>
+
+    <!-- Chatbot Widget -->
+    <script src="../chatbot-widget.js"></script>
+</body>
+</html>
