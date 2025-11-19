@@ -558,18 +558,18 @@ Hãy phản hồi một cách hữu ích và chuyên nghiệp.`;
             try {
                 const [fileResult] = await analyticsPool.query(`
                     INSERT INTO ChatbotFiles (
-                        ma_nguoi_dung, session_id, file_name, file_path,
-                        file_size, file_type, ai_analysis, upload_status
+                        ma_nguoi_dung, session_id, original_name, stored_name,
+                        file_path, file_size, mime_type, analysis_result
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
                     user?.ma_nguoi_dung || null,
                     session_id,
                     file.originalname,
+                    file.filename,
                     file.path,
                     file.size,
                     file.mimetype,
-                    aiResponse,
-                    'completed'
+                    aiResponse
                 ]);
                 
                 fileId = fileResult.insertId;
