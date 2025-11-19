@@ -177,6 +177,11 @@ exports.uploadDocument = async (req, res) => {
         console.log('=== UPLOAD REQUEST ===');
         console.log('User:', user);
         console.log('Body:', { tieu_de, mo_ta, ma_mon_hoc, ma_danh_muc });
+        console.log('Body types:', { 
+            tieu_de: typeof tieu_de, 
+            ma_mon_hoc: typeof ma_mon_hoc,
+            ma_danh_muc: typeof ma_danh_muc
+        });
         console.log('File:', file ? { filename: file.filename, size: file.size, mimetype: file.mimetype } : 'No file');
 
         if (!user || !user.ma_nguoi_dung) {
@@ -190,6 +195,7 @@ exports.uploadDocument = async (req, res) => {
         }
 
         // Validate subject is provided and not empty
+        console.log('Validating ma_mon_hoc:', ma_mon_hoc, 'isEmpty:', !ma_mon_hoc, 'isZero:', ma_mon_hoc === '0');
         if (!ma_mon_hoc || ma_mon_hoc === '' || ma_mon_hoc === '0') {
             console.error('❌ Invalid subject ID:', ma_mon_hoc);
             return res.status(400).json({ message: 'Vui lòng chọn môn học' });
