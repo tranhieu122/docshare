@@ -14,7 +14,7 @@ router.post('/chat', chatbotController.chat);
 router.get('/context', chatbotController.getContext);
 
 // Protected routes (cần đăng nhập)
-router.post('/upload', authMiddleware.protect, upload.single('file'), chatbotController.uploadFile);
-router.get('/history', authMiddleware.protect, chatbotController.getHistory);
+router.post('/upload', authMiddleware.authenticate, upload.single('file'), chatbotController.uploadFile);
+router.get('/history', authMiddleware.authenticate, chatbotController.getHistory);
 
 module.exports = router;

@@ -943,14 +943,15 @@
 
                         <div class="form-group">
                             <label for="docSubject">
-                                <span style="color: #667eea;">📖</span> Môn học
+                                <span style="color: #667eea;">📖</span> Môn học *
                             </label>
-                            <input 
-                                type="text" 
+                            <select 
                                 id="docSubject" 
-                                placeholder="VD: Toán cao cấp A1"
-                                oninput="saveDraftAuto()"
+                                required
+                                onchange="saveDraftAuto()"
                             >
+                                <option value="">Chọn môn học</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -1180,9 +1181,9 @@
 
         // API Configuration - THAY ĐỔI THEO BACKEND CỦA BẠN
         const API_CONFIG = {
-            BASE_URL: 'https://your-api-domain.com/api', // Thay đổi URL này
+            BASE_URL: 'http://localhost:3000/api',
             ENDPOINTS: {
-                UPLOAD: '/documents/upload',
+                UPLOAD: '/documents',
                 VALIDATE: '/documents/validate',
                 CHECK_DUPLICATE: '/documents/check-duplicate'
             }
@@ -1195,6 +1196,7 @@
             checkAuthAndInit();
             setupUploadArea();
             loadDraftIfExists();
+            loadCategoriesAndSubjects();
         });
 
         function checkAuthAndInit() {
@@ -1223,6 +1225,61 @@
 
             if (dropdownUserEmail) {
                 dropdownUserEmail.textContent = user.email;
+            }
+        }
+
+        // Load categories and subjects from API
+        async function loadCategoriesAndSubjects() {
+            try {
+                // Load categories
+                const categoriesResponse = await fetch('http://localhost:3000/api/categories/danhmuc');
+                if (categoriesResponse.ok) {
+                    const categories = await categoriesResponse.json();
+                    const categorySelect = document.getElementById('docCategory');
+                    if (categorySelect && categories.length > 0) {
+                        categorySelect.innerHTML = '<option value="">Chọn danh mục</option>';
+                        categories.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = cat.ma_danh_muc;
+                            option.textContent = cat.ten_danh_muc;
+                            categorySelect.appendChild(option);
+                        });
+                    }
+                }
+
+                // Load subjects
+                const subjectsResponse = await fetch('http://localhost:3000/api/categories/monhoc');
+                if (subjectsResponse.ok) {
+                    const subjects = await subjectsResponse.json();
+                    const subjectSelect = document.getElementById('docSubject');
+                    if (subjectSelect && subjects.length > 0) {
+                        // Convert input to select if needed
+                        if (subjectSelect.tagName === 'INPUT') {
+                            const newSelect = document.createElement('select');
+                            newSelect.id = 'docSubject';
+                            newSelect.required = true;
+                            newSelect.setAttribute('onchange', 'saveDraftAuto()');
+                            newSelect.innerHTML = '<option value="">Chọn môn học</option>';
+                            subjects.forEach(subj => {
+                                const option = document.createElement('option');
+                                option.value = subj.ma_mon_hoc;
+                                option.textContent = subj.ten_mon_hoc;
+                                newSelect.appendChild(option);
+                            });
+                            subjectSelect.parentNode.replaceChild(newSelect, subjectSelect);
+                        } else {
+                            subjectSelect.innerHTML = '<option value="">Chọn môn học</option>';
+                            subjects.forEach(subj => {
+                                const option = document.createElement('option');
+                                option.value = subj.ma_mon_hoc;
+                                option.textContent = subj.ten_mon_hoc;
+                                subjectSelect.appendChild(option);
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading categories/subjects:', error);
             }
         }
 
@@ -1603,15 +1660,11 @@
                 const formData = new FormData();
                 formData.append('file', file);
                 
-                // Add metadata
-                formData.append('title', document.getElementById('docTitle').value);
-                formData.append('description', document.getElementById('docDescription').value);
-                formData.append('category', document.getElementById('docCategory').value);
-                formData.append('subject', document.getElementById('docSubject').value);
-                formData.append('level', document.getElementById('docLevel').value);
-                formData.append('language', document.getElementById('docLanguage').value);
-                formData.append('tags', document.getElementById('docTags').value);
-                formData.append('fileIndex', index);
+                // Add metadata - using backend field names
+                formData.append('tieu_de', document.getElementById('docTitle').value);
+                formData.append('mo_ta', document.getElementById('docDescription').value);
+                formData.append('ma_danh_muc', document.getElementById('docCategory').value);
+                formData.append('ma_mon_hoc', document.getElementById('docSubject').value);
 
                 const xhr = new XMLHttpRequest();
                 
@@ -1647,20 +1700,17 @@
                     reject(new Error('AbortError'));
                 });
 
-                // PRODUCTION: Replace with your actual API endpoint
+                // Upload to real API endpoint
                 const uploadUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`;
                 
-                // DEVELOPMENT: Simulate upload
-                // Comment out the real upload and use simulation
-                simulateFileUpload(index).then(resolve).catch(reject);
-                return;
+                // DEVELOPMENT: Uncomment below to simulate upload
+                // simulateFileUpload(index).then(resolve).catch(reject);
+                // return;
 
-                // PRODUCTION CODE (uncomment when ready):
-                /*
+                // PRODUCTION CODE:
                 xhr.open('POST', uploadUrl);
                 xhr.setRequestHeader('Authorization', `Bearer ${getToken()}`);
                 xhr.send(formData);
-                */
             });
         }
 
