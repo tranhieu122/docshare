@@ -174,18 +174,24 @@ exports.uploadDocument = async (req, res) => {
         const file = req.file;
         const user = req.user;
 
-        console.log('Upload user:', user); // Debug log
+        console.log('=== UPLOAD REQUEST ===');
+        console.log('User:', user);
+        console.log('Body:', { tieu_de, mo_ta, ma_mon_hoc, ma_danh_muc });
+        console.log('File:', file ? { filename: file.filename, size: file.size, mimetype: file.mimetype } : 'No file');
 
         if (!user || !user.ma_nguoi_dung) {
+            console.error('❌ No user or ma_nguoi_dung');
             return res.status(401).json({ message: 'Chưa đăng nhập' });
         }
 
         if (!tieu_de || !file) {
+            console.error('❌ Missing title or file');
             return res.status(400).json({ message: 'Thiếu tiêu đề hoặc file' });
         }
 
         // Validate subject is provided and not empty
         if (!ma_mon_hoc || ma_mon_hoc === '' || ma_mon_hoc === '0') {
+            console.error('❌ Invalid subject ID:', ma_mon_hoc);
             return res.status(400).json({ message: 'Vui lòng chọn môn học' });
         }
 
@@ -193,8 +199,20 @@ exports.uploadDocument = async (req, res) => {
         const schemaPool = await getSchemaPool();
 
         if (!schemaPool) {
+            console.error('❌ Cannot connect to database');
             return res.status(500).json({ message: 'Không thể kết nối database' });
         }
+
+        console.log('✅ Database connected');
+        console.log('Inserting:', {
+            tieu_de,
+            ma_mon_hoc: parseInt(ma_mon_hoc, 10),
+            ma_danh_muc: ma_danh_muc ? parseInt(ma_danh_muc, 10) : null,
+            ten_tap: file.filename,
+            kich_thuoc: file.size,
+            loai_tap: file.mimetype,
+            ma_nguoi_dung: user.ma_nguoi_dung
+        });
 
         // Insert document info (file stored in uploads folder, managed separately)
         const [result] = await schemaPool.query(
@@ -212,6 +230,7 @@ exports.uploadDocument = async (req, res) => {
         );
 
         const docId = result.insertId;
+        console.log('✅ Document inserted with ID:', docId);
 
         res.json({
             message: 'Upload tài liệu thành công!',
