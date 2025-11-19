@@ -1,11 +1,20 @@
+// =============================================
+// CHATBOT ROUTES
+// File: routes/chatbot.js
+// =============================================
+
 const express = require('express');
 const router = express.Router();
 const chatbotController = require('../controllers/chatbot');
+const authMiddleware = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
-// Chat with bot
+// Public routes (không cần đăng nhập)
 router.post('/chat', chatbotController.chat);
+router.get('/context', chatbotController.getContext);
 
-// Query documents via chatbot
-router.post('/document-query', chatbotController.documentQuery);
+// Protected routes (cần đăng nhập)
+router.post('/upload', authMiddleware.protect, upload.single('file'), chatbotController.uploadFile);
+router.get('/history', authMiddleware.protect, chatbotController.getHistory);
 
 module.exports = router;

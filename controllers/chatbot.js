@@ -507,6 +507,92 @@ exports.feedback = async (req, res) => {
     }
 };
 
+// Upload file and analyze with AI
+exports.uploadFile = async (req, res) => {
+    try {
+        const { session_id, message } = req.body;
+        const user = req.user || null;
+        
+        if (!req.file) {
+            return res.status(400).json({ message: 'Vui lòng chọn file để upload' });
+        }
+
+        const file = req.file;
+        const startTime = Date.now();
+
+        // Analyze file with AI
+        let aiResponse;
+        try {
+            const prompt = `Đây là file "${file.originalname}" (${file.mimetype}, ${file.size} bytes).
+            
+${message || 'Người dùng đã upload file này. Hãy phân tích và đưa ra nhận xét về file, gợi ý cách sử dụng, hoặc trả lời câu hỏi của họ.'}
+
+Hãy phản hồi một cách hữu ích và chuyên nghiệp.`;
+
+            const result = await retryApiCall(async () => {
+                const model = genAI.getGenerativeModel({ 
+                    model: 'gemini-2.0-flash-exp',
+                    generationConfig: {
+                        temperature: 0.7,
+                        topK: 40,
+                        topP: 0.95,
+                        maxOutputTokens: 1024,
+                    }
+                });
+                return await model.generateContent(prompt);
+            });
+            
+            aiResponse = result.response.text();
+        } catch (apiError) {
+            console.error('AI API error:', apiError.message);
+            aiResponse = `✅ File "${file.originalname}" đã được upload thành công!\n\n📊 Thông tin file:\n• Tên: ${file.originalname}\n• Kích thước: ${(file.size / 1024).toFixed(2)} KB\n• Loại: ${file.mimetype}\n\nBạn có thể sử dụng file này để tham khảo hoặc chia sẻ với cộng đồng! 📚`;
+        }
+
+        const responseTime = Date.now() - startTime;
+
+        // Save to analytics
+        const analyticsPool = await getAnalyticsPool();
+        if (analyticsPool && session_id) {
+            try {
+                await analyticsPool.query(`
+                    INSERT INTO ChatbotConversations (
+                        ma_nguoi_dung, user_role, session_id, message_type,
+                        message_content, page_context, response_time, model_used
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    user?.ma_nguoi_dung || null,
+                    user?.chuc_vu || 'guest',
+                    session_id,
+                    'bot',
+                    aiResponse,
+                    'file_upload',
+                    responseTime,
+                    'gemini-2.0-flash-exp'
+                ]);
+            } catch (dbError) {
+                console.error('Error saving to analytics:', dbError);
+            }
+        }
+
+        res.json({
+            message: aiResponse,
+            file: {
+                name: file.originalname,
+                size: file.size,
+                type: file.mimetype,
+                path: file.path
+            },
+            response_time: responseTime
+        });
+    } catch (error) {
+        console.error('Upload file error:', error);
+        res.status(500).json({ 
+            message: 'Lỗi khi upload file. Vui lòng thử lại!',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 // Get chat history
 exports.getHistory = async (req, res) => {
     try {
