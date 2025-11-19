@@ -550,8 +550,36 @@ Hãy phản hồi một cách hữu ích và chuyên nghiệp.`;
 
         const responseTime = Date.now() - startTime;
 
-        // Save to analytics
+        // Save file info to ChatbotFiles table
         const analyticsPool = await getAnalyticsPool();
+        let fileId = null;
+        
+        if (analyticsPool) {
+            try {
+                const [fileResult] = await analyticsPool.query(`
+                    INSERT INTO ChatbotFiles (
+                        ma_nguoi_dung, session_id, file_name, file_path,
+                        file_size, file_type, ai_analysis, upload_status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    user?.ma_nguoi_dung || null,
+                    session_id,
+                    file.originalname,
+                    file.path,
+                    file.size,
+                    file.mimetype,
+                    aiResponse,
+                    'completed'
+                ]);
+                
+                fileId = fileResult.insertId;
+                console.log('✅ File saved to ChatbotFiles with ID:', fileId);
+            } catch (dbError) {
+                console.error('❌ Error saving file to ChatbotFiles:', dbError);
+            }
+        }
+
+        // Save to analytics (conversation history)
         if (analyticsPool && session_id) {
             try {
                 await analyticsPool.query(`
@@ -569,14 +597,16 @@ Hãy phản hồi một cách hữu ích và chuyên nghiệp.`;
                     responseTime,
                     'gemini-2.0-flash-exp'
                 ]);
+                console.log('✅ Conversation saved to ChatbotConversations');
             } catch (dbError) {
-                console.error('Error saving to analytics:', dbError);
+                console.error('❌ Error saving to analytics:', dbError);
             }
         }
 
         res.json({
             message: aiResponse,
             file: {
+                id: fileId,
                 name: file.originalname,
                 size: file.size,
                 type: file.mimetype,
