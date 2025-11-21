@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Danh sách tài liệu - DocShare">
-    <title>Danh sách tài liệu | DocShare</title>
+    <meta name="description" content="Khám phá tài liệu - DocShare">
+    <meta name="keywords" content="tài liệu học tập, chia sẻ tài liệu, sinh viên, đại học">
+    <meta name="author" content="DocShare Team">
+    <title>Khám phá tài liệu | DocShare</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-    </div>
-
     <!-- Notification Toast -->
     <div id="notificationToast" class="notification-toast">
         <span id="toastMessage"></span>
         <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải...</p>
     </div>
 
     <!-- Header -->
@@ -35,11 +37,19 @@
                     <span class="nav-icon">🏠</span>
                     Trang chủ
                 </a>
-                <a href="./list.html" class="nav-link">
+                <a href="./list.html" class="nav-link active">
                     <span class="nav-icon">🔍</span>
                     Khám phá
                 </a>
-                <div class="nav-buttons" id="authButtons">
+                <a href="../features.html" class="nav-link">
+                    <span class="nav-icon">✨</span>
+                    Tính năng
+                </a>
+                <a href="../about.html" class="nav-link">
+                    <span class="nav-icon">ℹ️</span>
+                    Về chúng tôi
+                </a>
+                <div class="nav-buttons" id="authButtons" style="display: none;">
                     <a href="../login.html" class="btn-login">
                         <span>🔑</span> Đăng nhập
                     </a>
@@ -48,7 +58,7 @@
                     </a>
                 </div>
                 <!-- User Dropdown (chỉ hiện khi đã đăng nhập) -->
-                <div class="nav-buttons" id="userSection" style="display: none;">
+                <div class="nav-buttons" id="userSection">
                     <a href="../admin/dashboard.html" id="adminLink" class="btn-danger" style="display: none;">
                         <span>🔑</span> Quản trị
                     </a>
@@ -98,41 +108,83 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <section class="dashboard">
+    <!-- Search & Filter Section -->
+    <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 0; margin-bottom: 40px;">
         <div class="container">
-            <!-- Filter Section -->
-            <div class="table-container" style="margin-bottom: 30px;">
-                <h3>🔍 Tìm kiếm và lọc tài liệu</h3>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <input type="text" id="searchQuery" placeholder="Tìm kiếm tài liệu..." style="width: 100%;">
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <select id="filterCategory" style="width: 100%;">
-                            <option value="">-- Tất cả danh mục --</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <select id="filterSubject" style="width: 100%;">
-                            <option value="">-- Tất cả môn học --</option>
-                        </select>
-                    </div>
-                    
-                    <button class="btn" onclick="filterDocuments()" style="height: 48px;">Lọc</button>
+            <h1 style="color: white; text-align: center; margin-bottom: 30px; font-size: 2.5rem;">🔍 Khám phá tài liệu</h1>
+            
+            <!-- Search Bar -->
+            <div style="max-width: 800px; margin: 0 auto 30px;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm tài liệu..." 
+                        style="flex: 1; padding: 15px 20px; border: none; border-radius: 10px; font-size: 1rem;"
+                        onkeypress="if(event.key === 'Enter') searchDocuments()">
+                    <button onclick="searchDocuments()" class="btn" style="background: white; color: #667eea; padding: 15px 30px;">
+                        🔍 Tìm kiếm
+                    </button>
                 </div>
             </div>
 
-            <!-- Documents List -->
-            <div class="table-container">
-                <h3>📚 Danh sách tài liệu (<span id="docCount">0</span>)</h3>
-                <div id="documentsList" class="docs-grid" style="margin-top: 20px;"></div>
-                
-                <!-- Pagination -->
-                <div id="pagination" style="text-align: center; margin-top: 30px;"></div>
+            <!-- Filter Chips -->
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button class="filter-chip-light active" data-filter="all" onclick="filterDocuments('all')">
+                    📚 Tất cả
+                </button>
+                <button class="filter-chip-light" data-filter="category" onclick="toggleCategoryFilter()">
+                    🏷️ Danh mục
+                </button>
+                <button class="filter-chip-light" data-filter="subject" onclick="toggleSubjectFilter()">
+                    📖 Môn học
+                </button>
+                <button class="filter-chip-light" data-filter="sort" onclick="toggleSortFilter()">
+                    ⚡ Sắp xếp
+                </button>
+            </div>
+
+            <!-- Dropdown Filters -->
+            <div id="categoryFilterDropdown" style="display: none; margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <select id="categorySelect" class="form-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid white;" onchange="applyCategoryFilter()">
+                    <option value="">-- Chọn danh mục --</option>
+                </select>
+            </div>
+
+            <div id="subjectFilterDropdown" style="display: none; margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <select id="subjectSelect" class="form-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid white;" onchange="applySubjectFilter()">
+                    <option value="">-- Chọn môn học --</option>
+                </select>
+            </div>
+
+            <div id="sortFilterDropdown" style="display: none; margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <select id="sortSelect" class="form-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid white;" onchange="applySortFilter()">
+                    <option value="newest">🆕 Mới nhất</option>
+                    <option value="popular">🔥 Phổ biến nhất</option>
+                    <option value="downloads">⬇️ Nhiều lượt tải</option>
+                    <option value="rating">⭐ Đánh giá cao</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documents Grid -->
+    <section class="dashboard">
+        <div class="container">
+            <!-- Result Info -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 id="resultTitle" style="color: #2c3e50; margin: 0;">📚 Tất cả tài liệu</h2>
+                <span id="resultCount" style="color: #666; font-size: 0.9rem;">Đang tải...</span>
+            </div>
+
+            <!-- Documents Grid -->
+            <div id="documentsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px;">
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                    <div class="loading-spinner" style="margin: 0 auto 20px;"></div>
+                    <p style="color: #666;">Đang tải tài liệu...</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 40px;">
+                <!-- Pagination will be generated here -->
             </div>
         </div>
     </section>
@@ -154,29 +206,28 @@
                 <div class="footer-section">
                     <h4>Liên kết nhanh</h4>
                     <ul>
-                        <li><a href="../sinhvien/home.html">Trang chủ</a></li>
+                        <li><a href="../index.html">Trang chủ</a></li>
+                        <li><a href="./list.html">Khám phá</a></li>
                         <li><a href="../sinhvien/upload.html">Tải lên</a></li>
-                        <li><a href="../sinhvien/my-documents.html">Tài liệu</a></li>
-                        <li><a href="../sinhvien/profile.html">Hồ sơ</a></li>
+                        <li><a href="../sinhvien/my-documents.html">Tài liệu của tôi</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-section">
                     <h4>Hỗ trợ</h4>
                     <ul>
-                        <li><a href="../help.html">Trợ giúp</a></li>
-                        <li><a href="../contact.html">Liên hệ</a></li>
-                        <li><a href="../faq.html">FAQ</a></li>
-                        <li><a href="../feedback.html">Góp ý</a></li>
+                        <li><a href="#">Trung tâm trợ giúp</a></li>
+                        <li><a href="#">Liên hệ</a></li>
+                        <li><a href="#">FAQ</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-section">
-                    <h4>Liên hệ</h4>
-                    <ul class="footer-contact">
-                        <li>📧 support@docshare.vn</li>
-                        <li>📞 +84 123 456 789</li>
-                        <li>📍 Hà Nội, Việt Nam</li>
+                    <h4>Pháp lý</h4>
+                    <ul>
+                        <li><a href="#">Điều khoản</a></li>
+                        <li><a href="#">Bảo mật</a></li>
+                        <li><a href="#">Bản quyền</a></li>
                     </ul>
                 </div>
             </div>
@@ -190,322 +241,331 @@
     <!-- Back to Top -->
     <button id="backToTop" class="back-to-top" onclick="scrollToTop()">↑</button>
 
+    <!-- Scripts -->
     <script src="../main.js"></script>
     <script src="../header-auth.js"></script>
     <script>
-        const API_URL = 'http://localhost:3000/api';
-        let currentPage = 1;
-        const docsPerPage = 12;
+        const API_BASE = 'http://localhost:3000/api';
         let allDocuments = [];
         let filteredDocuments = [];
+        let currentPage = 1;
+        const itemsPerPage = 12;
+        let currentFilter = {
+            search: '',
+            category: '',
+            subject: '',
+            sort: 'newest'
+        };
 
-        // ===================================
-        // INITIALIZATION
-        // ===================================
-
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthentication();
-            loadFilters();
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadSubjects();
             loadDocuments();
-            setupEventListeners();
+            
+            // Check for URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('search')) {
+                document.getElementById('searchInput').value = urlParams.get('search');
+                currentFilter.search = urlParams.get('search');
+            }
+            if (urlParams.has('category')) {
+                currentFilter.category = urlParams.get('category');
+            }
+            if (urlParams.has('subject')) {
+                currentFilter.subject = urlParams.get('subject');
+            }
         });
 
-        function checkAuthentication() {
-            const user = getUser();
-            const token = getToken();
-            const authButtons = document.getElementById('authButtons');
-            const userSection = document.getElementById('userSection');
-            
-            if (!user || !token) {
-                // Show login buttons, hide user section
-                if (authButtons) authButtons.style.display = 'flex';
-                if (userSection) userSection.style.display = 'none';
-            } else {
-                // Hide login buttons, show user section
-                if (authButtons) authButtons.style.display = 'none';
-                if (userSection) userSection.style.display = 'flex';
-
-                // Update dropdown user info
-                const userNameHeader = document.getElementById('userNameHeader');
-                if (userNameHeader) {
-                    const displayName = user.ho_ten || user.email.split('@')[0];
-                    userNameHeader.textContent = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
-                }
-
-                const dropdownUserEmail = document.getElementById('dropdownUserEmail');
-                if (dropdownUserEmail) {
-                    dropdownUserEmail.textContent = user.email;
-                }
-
-                // Show admin link if user is admin
-                if (user.chuc_vu === 'admin') {
-                    const adminLink = document.getElementById('adminLink');
-                    if (adminLink) {
-                        adminLink.style.display = 'inline-flex';
-                    }
-                }
-            }
-        }
-
-        function setupEventListeners() {
-            // Enter để search
-            document.getElementById('searchQuery').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    filterDocuments();
-                }
-            });
-
-            // Back to top button
-            window.addEventListener('scroll', function() {
-                const backToTop = document.getElementById('backToTop');
-                if (backToTop) {
-                    backToTop.classList.toggle('show', window.pageYOffset > 300);
-                }
-            });
-        }
-
-        // ===================================
-        // LOAD FILTERS
-        // ===================================
-
-        async function loadFilters() {
+        // Load categories
+        async function loadCategories() {
             try {
-                const [catRes, subRes] = await Promise.all([
-                    fetch(`${API_URL}/categories/danhmuc`),
-                    fetch(`${API_URL}/categories/monhoc`)
-                ]);
-
-                if (catRes.ok) {
-                    const categories = await catRes.json();
-                    const select = document.getElementById('filterCategory');
+                const response = await fetch(`${API_BASE}/categories`);
+                if (response.ok) {
+                    const categories = await response.json();
+                    const select = document.getElementById('categorySelect');
                     categories.forEach(cat => {
-                        select.innerHTML += `<option value="${cat.ma_danh_muc}">${cat.ten_danh_muc}</option>`;
-                    });
-                }
-
-                if (subRes.ok) {
-                    const subjects = await subRes.json();
-                    const select = document.getElementById('filterSubject');
-                    subjects.forEach(sub => {
-                        select.innerHTML += `<option value="${sub.ma_mon_hoc}">${sub.ten_mon_hoc}</option>`;
+                        const option = document.createElement('option');
+                        option.value = cat.ma_danh_muc;
+                        option.textContent = cat.ten_danh_muc;
+                        select.appendChild(option);
                     });
                 }
             } catch (error) {
-                console.error('Error loading filters:', error);
+                console.error('Error loading categories:', error);
             }
         }
 
-        // ===================================
-        // LOAD DOCUMENTS
-        // ===================================
+        // Load subjects
+        async function loadSubjects() {
+            try {
+                const response = await fetch(`${API_BASE}/subjects`);
+                if (response.ok) {
+                    const subjects = await response.json();
+                    const select = document.getElementById('subjectSelect');
+                    subjects.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject.ma_mon_hoc;
+                        option.textContent = subject.ten_mon_hoc;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+            }
+        }
 
+        // Load documents
         async function loadDocuments() {
             showLoading();
-            
             try {
-                const response = await fetch(`${API_URL}/documents`);
+                let url = `${API_BASE}/documents`;
+                const params = new URLSearchParams();
+                
+                if (currentFilter.search) {
+                    url = `${API_BASE}/documents/search`;
+                    params.append('q', currentFilter.search);
+                }
+                if (currentFilter.category) {
+                    params.append('category', currentFilter.category);
+                }
+                if (currentFilter.subject) {
+                    params.append('subject', currentFilter.subject);
+                }
+                if (currentFilter.sort) {
+                    params.append('sort', currentFilter.sort);
+                }
+
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+
+                const response = await fetch(url);
+                
                 if (response.ok) {
                     allDocuments = await response.json();
-                    
-                    // Kiểm tra URL params
-                    const searchParam = getUrlParameter('search');
-                    const categoryParam = getUrlParameter('category');
-                    
-                    if (searchParam) {
-                        document.getElementById('searchQuery').value = searchParam;
-                    }
-                    if (categoryParam) {
-                        document.getElementById('filterCategory').value = categoryParam;
-                    }
-                    
-                    filterDocuments();
+                    filteredDocuments = [...allDocuments];
+                    displayDocuments();
+                    updateResultInfo();
                 } else {
-                    document.getElementById('documentsList').innerHTML = 
-                        '<p style="text-align: center; color: #444; font-weight: 600;">Không thể tải danh sách tài liệu</p>';
+                    showError('Không thể tải danh sách tài liệu');
                 }
             } catch (error) {
                 console.error('Error loading documents:', error);
-                document.getElementById('documentsList').innerHTML = 
-                    '<p style="text-align: center; color: #e74c3c; font-weight: 600;">Có lỗi xảy ra khi tải tài liệu</p>';
+                showError('Lỗi kết nối. Vui lòng thử lại sau.');
             } finally {
                 hideLoading();
             }
         }
 
-        // ===================================
-        // FILTER DOCUMENTS
-        // ===================================
-
-        function filterDocuments() {
-            const searchQuery = document.getElementById('searchQuery').value.toLowerCase();
-            const categoryId = document.getElementById('filterCategory').value;
-            const subjectId = document.getElementById('filterSubject').value;
-
-            filteredDocuments = allDocuments.filter(doc => {
-                let match = true;
-
-                if (searchQuery) {
-                    match = match && (
-                        doc.tieu_de.toLowerCase().includes(searchQuery) ||
-                        (doc.mo_ta && doc.mo_ta.toLowerCase().includes(searchQuery))
-                    );
-                }
-
-                if (categoryId) {
-                    match = match && doc.ma_danh_muc == categoryId;
-                }
-
-                if (subjectId) {
-                    match = match && doc.ma_mon_hoc == subjectId;
-                }
-
-                return match;
-            });
-
-            document.getElementById('docCount').textContent = filteredDocuments.length;
+        // Search documents
+        function searchDocuments() {
+            const searchValue = document.getElementById('searchInput').value.trim();
+            currentFilter.search = searchValue;
             currentPage = 1;
-            displayPage();
+            loadDocuments();
         }
 
-        // ===================================
-        // DISPLAY PAGE
-        // ===================================
+        // Filter documents
+        function filterDocuments(type) {
+            // Update active chip
+            document.querySelectorAll('.filter-chip-light').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
 
-        function displayPage() {
-            const start = (currentPage - 1) * docsPerPage;
-            const end = start + docsPerPage;
-            const pageDocs = filteredDocuments.slice(start, end);
-
-            const container = document.getElementById('documentsList');
-            displayDocuments(pageDocs, container);
-
-            // Pagination
-            displayPagination();
+            if (type === 'all') {
+                currentFilter = { search: '', category: '', subject: '', sort: 'newest' };
+                document.getElementById('searchInput').value = '';
+                document.getElementById('categorySelect').value = '';
+                document.getElementById('subjectSelect').value = '';
+                document.getElementById('sortSelect').value = 'newest';
+                currentPage = 1;
+                loadDocuments();
+            }
         }
 
-        function displayPagination() {
-            const totalPages = Math.ceil(filteredDocuments.length / docsPerPage);
-            const container = document.getElementById('pagination');
+        // Toggle filters
+        function toggleCategoryFilter() {
+            const dropdown = document.getElementById('categoryFilterDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('subjectFilterDropdown').style.display = 'none';
+            document.getElementById('sortFilterDropdown').style.display = 'none';
+        }
 
-            if (totalPages <= 1) {
-                container.innerHTML = '';
+        function toggleSubjectFilter() {
+            const dropdown = document.getElementById('subjectFilterDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('categoryFilterDropdown').style.display = 'none';
+            document.getElementById('sortFilterDropdown').style.display = 'none';
+        }
+
+        function toggleSortFilter() {
+            const dropdown = document.getElementById('sortFilterDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('categoryFilterDropdown').style.display = 'none';
+            document.getElementById('subjectFilterDropdown').style.display = 'none';
+        }
+
+        // Apply filters
+        function applyCategoryFilter() {
+            currentFilter.category = document.getElementById('categorySelect').value;
+            currentPage = 1;
+            loadDocuments();
+        }
+
+        function applySubjectFilter() {
+            currentFilter.subject = document.getElementById('subjectSelect').value;
+            currentPage = 1;
+            loadDocuments();
+        }
+
+        function applySortFilter() {
+            currentFilter.sort = document.getElementById('sortSelect').value;
+            currentPage = 1;
+            loadDocuments();
+        }
+
+        // Display documents
+        function displayDocuments() {
+            const grid = document.getElementById('documentsGrid');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageDocuments = filteredDocuments.slice(startIndex, endIndex);
+
+            if (pageDocuments.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;">📭</div>
+                        <h3 style="color: #666; margin-bottom: 10px;">Không tìm thấy tài liệu</h3>
+                        <p style="color: #999;">Thử tìm kiếm với từ khóa khác hoặc bỏ bộ lọc</p>
+                    </div>
+                `;
+                document.getElementById('pagination').innerHTML = '';
                 return;
             }
 
-            let html = '<div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">';
+            grid.innerHTML = pageDocuments.map(doc => createDocumentCard(doc)).join('');
+            createPagination();
+        }
 
-            // Previous
-            if (currentPage > 1) {
-                html += `<button class="btn btn-sm" onclick="changePage(${currentPage - 1})">← Trước</button>`;
+        // Create document card
+        function createDocumentCard(doc) {
+            const colors = ['#667eea', '#27ae60', '#e74c3c', '#f39c12', '#3498db', '#9b59b6'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            return `
+                <div class="document-card" onclick="window.location.href='./detail.html?id=${doc.ma_tai_lieu}'">
+                    <div class="document-icon" style="background: linear-gradient(135deg, ${randomColor} 0%, ${randomColor}dd 100%);">
+                        📄
+                    </div>
+                    <div class="document-content">
+                        <h3 class="document-title">${doc.tieu_de || 'Không có tiêu đề'}</h3>
+                        <p class="document-description">${(doc.mo_ta || 'Không có mô tả').substring(0, 80)}${(doc.mo_ta?.length > 80) ? '...' : ''}</p>
+                        <div class="document-meta">
+                            <span title="Lượt xem">👁️ ${formatNumber(doc.so_luot_xem || 0)}</span>
+                            <span title="Lượt tải">⬇️ ${formatNumber(doc.so_luot_tai || 0)}</span>
+                            <span title="Đánh giá">⭐ ${doc.rating || '-'}</span>
+                        </div>
+                        ${doc.ten_mon_hoc ? `<div class="document-tag">${doc.ten_mon_hoc}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create pagination
+        function createPagination() {
+            const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
             }
 
-            // Pages
+            let html = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                html += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})">‹ Trước</button>`;
+            }
+
+            // Page numbers
             for (let i = 1; i <= totalPages; i++) {
-                if (i === currentPage) {
-                    html += `<button class="btn btn-sm" style="background: #667eea;">${i}</button>`;
-                } else if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
-                    html += `<button class="btn btn-sm" onclick="changePage(${i})">${i}</button>`;
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
                 } else if (i === currentPage - 3 || i === currentPage + 3) {
-                    html += `<span style="padding: 0 10px; font-weight: 600;">...</span>`;
+                    html += `<span style="padding: 10px;">...</span>`;
                 }
             }
 
-            // Next
+            // Next button
             if (currentPage < totalPages) {
-                html += `<button class="btn btn-sm" onclick="changePage(${currentPage + 1})">Sau →</button>`;
+                html += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})">Sau ›</button>`;
             }
 
-            html += '</div>';
-            container.innerHTML = html;
+            pagination.innerHTML = html;
         }
 
-        function changePage(page) { 
+        // Change page
+        function changePage(page) {
             currentPage = page;
-            displayPage();
+            displayDocuments();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ===================================
-        // UTILITY FUNCTIONS
-        // ===================================
-
-        function getUser() {
-            try {
-                return JSON.parse(localStorage.getItem('user'));
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function getToken() {
-            return localStorage.getItem('token');
-        }
-
-        function showLoading() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) overlay.style.display = 'flex';
-        }
-
-        function hideLoading() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) overlay.style.display = 'none';
-        }
-
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('notificationToast');
-            const toastMessage = document.getElementById('toastMessage');
+        // Update result info
+        function updateResultInfo() {
+            const count = document.getElementById('resultCount');
+            const title = document.getElementById('resultTitle');
             
-            if (toast && toastMessage) {
-                toastMessage.textContent = message;
-                toast.className = 'notification-toast show ' + type;
-                setTimeout(() => toast.classList.remove('show'), 3000);
+            let titleText = '📚 Tất cả tài liệu';
+            if (currentFilter.search) {
+                titleText = `🔍 Kết quả tìm kiếm: "${currentFilter.search}"`;
+            } else if (currentFilter.category) {
+                titleText = '🏷️ Tài liệu theo danh mục';
+            } else if (currentFilter.subject) {
+                titleText = '📖 Tài liệu theo môn học';
             }
-        }
-
-        function closeToast() {
-            const toast = document.getElementById('notificationToast');
-            if (toast) toast.classList.remove('show');
-        }
-
-        function toggleMobileMenu() {
-            const nav = document.querySelector('.nav');
-            if (nav) nav.classList.toggle('active');
-        }
-
-        function toggleUserDropdown() {
-            const dropdown = document.getElementById('userDropdownMenu');
-            if (dropdown) {
-                dropdown.classList.toggle('show');
-            }
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('userDropdownMenu');
-            const dropdownBtn = document.querySelector('.user-dropdown-btn');
             
-            if (dropdown && dropdownBtn) {
-                if (!dropdown.contains(event.target) && !dropdownBtn.contains(event.target)) {
-                    dropdown.classList.remove('show');
-                }
-            }
-        });
+            title.textContent = titleText;
+            count.textContent = `${filteredDocuments.length} tài liệu`;
+        }
 
+        // Format number
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        // Show error
+        function showError(message) {
+            const grid = document.getElementById('documentsGrid');
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;">❌</div>
+                    <h3 style="color: #e74c3c; margin-bottom: 10px;">${message}</h3>
+                    <button class="btn" onclick="loadDocuments()">🔄 Thử lại</button>
+                </div>
+            `;
+        }
+
+        // Back to top
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function logout() {
-            if (confirm('Bạn có chắc muốn đăng xuất?')) {
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-                showToast('Đã đăng xuất thành công', 'success');
-                setTimeout(() => window.location.href = '../index.html', 1000);
+        // Show back to top button on scroll
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
             }
-        }
+        });
     </script>
-
-    <!-- Chatbot Widget -->
-    <script src="../chatbot-widget.js"></script>
 </body>
 </html>

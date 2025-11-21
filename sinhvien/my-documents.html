@@ -529,11 +529,11 @@
                     <span class="nav-icon">🔍</span>
                     Khám phá
                 </a>
-                <a href="../index.html#features" class="nav-link">
+                <a href="../features.html" class="nav-link">
                     <span class="nav-icon">✨</span>
                     Tính năng
                 </a>
-                <a href="../index.html#about" class="nav-link">
+                <a href="../about.html" class="nav-link">
                     <span class="nav-icon">ℹ️</span>
                     Về chúng tôi
                 </a>
@@ -901,38 +901,50 @@
         // Load statistics
         async function loadStatistics() {
             try {
-                const response = await apiGet('/documents/my-stats');
+                const response = await apiGet('/users/me/stats');
                 
                 if (response && response.ok) {
                     const stats = await response.json();
                     
-                    animateValue('totalDocs', 0, stats.totalDocuments || 0, 1000);
-                    animateValue('approvedDocs', 0, stats.approvedDocuments || 0, 1000);
-                    animateValue('pendingDocs', 0, stats.pendingDocuments || 0, 1000);
-                    animateValue('totalViews', 0, stats.totalViews || 0, 1000);
-                    animateValue('totalDownloads', 0, stats.totalDownloads || 0, 1000);
+                    // Map API response to document stats
+                    const totalDocs = stats.documents || 0;
+                    const totalViews = stats.views || 0;
+                    const totalDownloads = stats.downloads || 0;
+                    
+                    // Calculate approved/pending from actual documents
+                    const docsResponse = await apiGet('/documents/my-documents');
+                    let approvedDocs = 0;
+                    let pendingDocs = 0;
+                    
+                    if (docsResponse && docsResponse.ok) {
+                        const docsData = await docsResponse.json();
+                        const docs = docsData.documents || docsData || [];
+                        approvedDocs = docs.filter(d => d.trang_thai === 'approved').length;
+                        pendingDocs = docs.filter(d => d.trang_thai === 'pending').length;
+                    }
+                    
+                    animateValue('totalDocs', 0, totalDocs, 1000);
+                    animateValue('approvedDocs', 0, approvedDocs, 1000);
+                    animateValue('pendingDocs', 0, pendingDocs, 1000);
+                    animateValue('totalViews', 0, totalViews, 1000);
+                    animateValue('totalDownloads', 0, totalDownloads, 1000);
                 } else {
-                    usePlaceholderStats();
+                    // Show 0 if error
+                    animateValue('totalDocs', 0, 0, 1000);
+                    animateValue('approvedDocs', 0, 0, 1000);
+                    animateValue('pendingDocs', 0, 0, 1000);
+                    animateValue('totalViews', 0, 0, 1000);
+                    animateValue('totalDownloads', 0, 0, 1000);
                 }
             } catch (error) {
                 console.error('Error loading statistics:', error);
-                usePlaceholderStats();
+                // Show 0 if error
+                animateValue('totalDocs', 0, 0, 1000);
+                animateValue('approvedDocs', 0, 0, 1000);
+                animateValue('pendingDocs', 0, 0, 1000);
+                animateValue('totalViews', 0, 0, 1000);
+                animateValue('totalDownloads', 0, 0, 1000);
             }
-        }
-
-        // Use placeholder statistics
-        function usePlaceholderStats() {
-            const randomTotal = Math.floor(Math.random() * 20) + 5;
-            const randomApproved = Math.floor(randomTotal * 0.7);
-            const randomPending = randomTotal - randomApproved;
-            const randomViews = randomTotal * Math.floor(Math.random() * 50 + 20);
-            const randomDownloads = Math.floor(randomViews * 0.3);
-            
-            animateValue('totalDocs', 0, randomTotal, 1000);
-            animateValue('approvedDocs', 0, randomApproved, 1000);
-            animateValue('pendingDocs', 0, randomPending, 1000);
-            animateValue('totalViews', 0, randomViews, 1000);
-            animateValue('totalDownloads', 0, randomDownloads, 1000);
         }
 
         // Animate number count up
@@ -972,51 +984,18 @@
                         showEmptyState();
                     }
                 } else {
-                    // Use placeholder documents for demo
-                    allDocuments = generatePlaceholderDocuments();
-                    filteredDocuments = [...allDocuments];
-                    displayDocuments();
+                    // Show empty state if error
+                    allDocuments = [];
+                    showEmptyState();
                 }
             } catch (error) {
                 console.error('Error loading documents:', error);
-                // Use placeholder documents
-                allDocuments = generatePlaceholderDocuments();
-                filteredDocuments = [...allDocuments];
-                displayDocuments();
+                // Show empty state if error
+                allDocuments = [];
+                showEmptyState();
             } finally {
                 hideLoading();
             }
-        }
-
-        // Generate placeholder documents
-        function generatePlaceholderDocuments() {
-            const titles = [
-                'Bài giảng Toán cao cấp A1',
-                'Lập trình C++ nâng cao',
-                'Cơ sở dữ liệu - SQL',
-                'Vật lý đại cương',
-                'TOEIC 600+ từ vựng',
-                'Kinh tế vi mô',
-                'Mạng máy tính',
-                'Cấu trúc dữ liệu',
-                'Java Spring Boot',
-                'Tiếng Anh chuyên ngành'
-            ];
-
-            const statuses = ['approved', 'approved', 'approved', 'pending', 'approved'];
-            const categories = ['tech', 'science', 'business', 'language'];
-            
-            return titles.map((title, index) => ({
-                ma_tai_lieu: index + 1,
-                tieu_de: title,
-                mo_ta: `Tài liệu chất lượng về ${title}. Bao gồm lý thuyết đầy đủ và bài tập thực hành.`,
-                ngay_tai: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-                trang_thai: statuses[Math.floor(Math.random() * statuses.length)],
-                danh_muc: categories[Math.floor(Math.random() * categories.length)],
-                so_luot_xem: Math.floor(Math.random() * 1000) + 100,
-                so_luot_tai: Math.floor(Math.random() * 500) + 50,
-                rating: (Math.random() * 1.5 + 3.5).toFixed(1)
-            }));
         }
 
         // Display documents

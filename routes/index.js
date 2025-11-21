@@ -19,6 +19,10 @@ router.use('/comments', commentRoutes);
 router.use('/admin', adminRoutes);
 router.use('/chatbot', chatbotRoutes);
 
+// Convenience route: /subjects returns all subjects
+const categoryController = require('../controllers/category');
+router.get('/subjects', categoryController.getAllSubjects);
+
 // Health check endpoint
 router.get('/health', (req, res) => {
     res.json({ 

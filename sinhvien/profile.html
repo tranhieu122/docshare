@@ -732,11 +732,11 @@
                     <span class="nav-icon">🔍</span>
                     Khám phá
                 </a>
-                <a href="../index.html#features" class="nav-link">
+                <a href="../features.html" class="nav-link">
                     <span class="nav-icon">✨</span>
                     Tính năng
                 </a>
-                <a href="../index.html#about" class="nav-link">
+                <a href="../about.html" class="nav-link">
                     <span class="nav-icon">ℹ️</span>
                     Về chúng tôi
                 </a>
@@ -1448,13 +1448,50 @@
         }
 
         function loadStats() {
-            // Mock data - replace with actual API calls
-            document.getElementById('statDocuments').textContent = '24';
-            document.getElementById('statViews').textContent = '1,847';
-            document.getElementById('statDownloads').textContent = '523';
-            document.getElementById('statLikes').textContent = '189';
-            document.getElementById('statComments').textContent = '67';
-            document.getElementById('statRating').textContent = '4.8';
+            // Load real stats from API
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // If not logged in, show 0 for all stats
+                document.getElementById('statDocuments').textContent = '0';
+                document.getElementById('statViews').textContent = '0';
+                document.getElementById('statDownloads').textContent = '0';
+                document.getElementById('statLikes').textContent = '0';
+                document.getElementById('statComments').textContent = '0';
+                document.getElementById('statRating').textContent = '0.0';
+                return;
+            }
+
+            fetch('http://localhost:3000/api/users/me/stats', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('statDocuments').textContent = data.documents || 0;
+                document.getElementById('statViews').textContent = formatNumber(data.views || 0);
+                document.getElementById('statDownloads').textContent = formatNumber(data.downloads || 0);
+                document.getElementById('statLikes').textContent = '0'; // Not implemented yet
+                document.getElementById('statComments').textContent = data.comments || 0;
+                document.getElementById('statRating').textContent = data.rating || '0.0';
+            })
+            .catch(error => {
+                console.error('Error loading stats:', error);
+                // Show 0 on error
+                document.getElementById('statDocuments').textContent = '0';
+                document.getElementById('statViews').textContent = '0';
+                document.getElementById('statDownloads').textContent = '0';
+                document.getElementById('statLikes').textContent = '0';
+                document.getElementById('statComments').textContent = '0';
+                document.getElementById('statRating').textContent = '0.0';
+            });
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+            }
+            return num.toString();
         }
 
         function loadNotificationSettings() {

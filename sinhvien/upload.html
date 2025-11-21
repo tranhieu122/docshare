@@ -719,11 +719,11 @@
                     <span class="nav-icon">🔍</span>
                     Khám phá
                 </a>
-                <a href="../index.html#features" class="nav-link">
+                <a href="../features.html" class="nav-link">
                     <span class="nav-icon">✨</span>
                     Tính năng
                 </a>
-                <a href="../index.html#about" class="nav-link">
+                <a href="../about.html" class="nav-link">
                     <span class="nav-icon">ℹ️</span>
                     Về chúng tôi
                 </a>
@@ -1201,7 +1201,9 @@
 
         function checkAuthAndInit() {
             const user = getUser();
-            const token = getToken();
+            const token = localStorage.getItem('token');
+
+            console.log('🔐 Auth check:', { user: user ? user.email : 'None', token: token ? 'Present' : 'Missing' });
 
             if (!user || !token) {
                 showToast('Vui lòng đăng nhập để tải lên tài liệu', 'info');
@@ -1658,9 +1660,9 @@
             
             return new Promise((resolve, reject) => {
                 // Validate token
-                const token = getToken();
+                const token = localStorage.getItem('token');
                 if (!token) {
-                    console.error('No token found');
+                    console.error('❌ No token found in localStorage');
                     showToast('Vui lòng đăng nhập lại', 'error');
                     setTimeout(() => {
                         window.location.href = '../login.html?redirect=upload';

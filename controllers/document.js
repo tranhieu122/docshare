@@ -346,28 +346,63 @@ exports.viewDocument = async (req, res) => {
 
         // Check if file exists
         if (!fs.existsSync(filePath)) {
+            console.error('File not found:', filePath);
             return res.status(404).json({ message: 'File không tồn tại trên server' });
         }
 
         // Update view count
         await pool.query('UPDATE TaiLieu SET so_luot_xem = so_luot_xem + 1 WHERE ma_tai_lieu = ?', [docId]);
 
+        // Determine content type based on file extension
+        const ext = path.extname(doc.ten_tap).toLowerCase();
+        let contentType = doc.loai_tap || 'application/octet-stream';
+        
+        const contentTypeMap = {
+            '.pdf': 'application/pdf',
+            '.doc': 'application/msword',
+            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            '.xls': 'application/vnd.ms-excel',
+            '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '.ppt': 'application/vnd.ms-powerpoint',
+            '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            '.txt': 'text/plain',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif'
+        };
+        
+        if (contentTypeMap[ext]) {
+            contentType = contentTypeMap[ext];
+        }
+
         // Send file
-        res.setHeader('Content-Type', doc.loai_tap || 'application/pdf');
+        res.setHeader('Content-Type', contentType);
         res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(doc.ten_tap)}"`);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
         
         const fileStream = fs.createReadStream(filePath);
+        fileStream.on('error', (error) => {
+            console.error('File stream error:', error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: 'Lỗi khi đọc file' });
+            }
+        });
         fileStream.pipe(res);
         
     } catch (error) {
         console.error('View error:', error);
-        res.status(500).json({ message: 'Lỗi khi xem tài liệu' });
+        if (!res.headersSent) {
+            res.status(500).json({ message: 'Lỗi khi xem tài liệu' });
+        }
     }
 };
 
 exports.getMyDocuments = async (req, res) => {
     try {
         const user = req.user;
+        console.log('📄 Get My Documents - User:', user);
+        
         if (!user) {
             return res.status(401).json({ message: 'Chưa đăng nhập' });
         }
@@ -378,6 +413,8 @@ exports.getMyDocuments = async (req, res) => {
         if (!pool) {
             return res.status(500).json({ message: 'Không thể kết nối database' });
         }
+
+        console.log('📄 Querying documents for user ID:', user.ma_nguoi_dung);
 
         // Get documents with subject and category names
         const [docs] = await pool.query(`
@@ -399,6 +436,9 @@ exports.getMyDocuments = async (req, res) => {
             WHERE t.ma_nguoi_dung = ?
             ORDER BY t.ngay_tai DESC
         `, [user.ma_nguoi_dung]);
+        
+        console.log('📄 Found documents:', docs.length);
+        console.log('📄 Documents:', JSON.stringify(docs, null, 2));
         
         res.json(docs);
     } catch (error) {
@@ -493,7 +533,10 @@ exports.rateDocument = async (req, res) => {
         const user = req.user;
         const { so_sao } = req.body;
         
+        console.log('📊 Rating Request:', { docId, userId: user?.ma_nguoi_dung, so_sao });
+        
         if (!user) {
+            console.error('❌ Rating failed: User not authenticated');
             return res.status(401).json({ message: 'Chưa đăng nhập' });
         }
         
@@ -523,20 +566,22 @@ exports.rateDocument = async (req, res) => {
         if (existing.length > 0) {
             // Update existing rating (ngay_cap_nhat auto-updates)
             await pool.query(
-                'UPDATE DanhGia SET so_sao = ? WHERE ma_nguoi_dung = ? AND ma_tai_lieu = ?',
+                'UPDATE DanhGia SET diem_so = ? WHERE ma_nguoi_dung = ? AND ma_tai_lieu = ?',
                 [so_sao, user.ma_nguoi_dung, docId]
             );
         } else {
             // Insert new rating (ma_danh_gia AUTO_INCREMENT, ngay_tao/ngay_cap_nhat auto-set)
             await pool.query(
-                'INSERT INTO DanhGia (ma_nguoi_dung, ma_tai_lieu, so_sao) VALUES (?, ?, ?)',
+                'INSERT INTO DanhGia (ma_nguoi_dung, ma_tai_lieu, diem_so) VALUES (?, ?, ?)',
                 [user.ma_nguoi_dung, docId, so_sao]
             );
         }
 
+        console.log('✅ Rating successful:', { docId, userId: user.ma_nguoi_dung, so_sao });
         res.json({ message: 'Đánh giá thành công', so_sao });
     } catch (error) {
-        console.error('Rate document error:', error);
+        console.error('❌ Rate document error:', error);
+        console.error('Error details:', { message: error.message, stack: error.stack });
         res.status(500).json({ message: 'Lỗi khi đánh giá tài liệu' });
     }
 };
@@ -554,7 +599,7 @@ exports.getDocumentRating = async (req, res) => {
         // Get average rating and total ratings
         const [stats] = await pool.query(`
             SELECT 
-                COALESCE(AVG(so_sao), 0) as avgRating,
+                COALESCE(AVG(diem_so), 0) as avgRating,
                 COUNT(*) as totalRatings
             FROM DanhGia 
             WHERE ma_tai_lieu = ?
@@ -569,11 +614,11 @@ exports.getDocumentRating = async (req, res) => {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-this');
                 const [userRate] = await pool.query(
-                    'SELECT so_sao FROM DanhGia WHERE ma_nguoi_dung = ? AND ma_tai_lieu = ?',
+                    'SELECT diem_so FROM DanhGia WHERE ma_nguoi_dung = ? AND ma_tai_lieu = ?',
                     [decoded.ma_nguoi_dung, docId]
                 );
                 if (userRate.length > 0) {
-                    userRating = userRate[0].so_sao;
+                    userRating = userRate[0].diem_so;
                 }
             } catch (err) {
                 // Token invalid, ignore

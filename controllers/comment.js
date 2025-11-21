@@ -1,7 +1,7 @@
 // Get comments by document
 exports.getCommentsByDocument = async (req, res) => {
     try {
-        const { documentId } = req.params;
+        const documentId = req.params.documentId || req.params.id; // Support cả 2 route
         const { getSchemaPool } = require('../config/database');
         const pool = await getSchemaPool();
         
@@ -29,7 +29,16 @@ exports.getCommentsByDocument = async (req, res) => {
 exports.createComment = async (req, res) => {
     try {
         const { noi_dung, ma_tai_lieu } = req.body;
-        const userId = req.user.id;
+        const documentId = req.params.id || ma_tai_lieu; // Lấy từ params hoặc body
+        const userId = req.user?.id || req.user?.ma_nguoi_dung;
+        
+        console.log('💬 Comment Request:', { documentId, userId, noi_dung_length: noi_dung?.length });
+        
+        if (!userId) {
+            console.error('❌ Comment failed: User not authenticated or missing ID');
+            return res.status(401).json({ message: 'Chưa đăng nhập' });
+        }
+        
         const { getSchemaPool } = require('../config/database');
         const pool = await getSchemaPool();
         
@@ -37,18 +46,20 @@ exports.createComment = async (req, res) => {
             return res.status(500).json({ message: 'Không thể kết nối database' });
         }
 
-        if (!noi_dung || !ma_tai_lieu) {
+        if (!noi_dung || !documentId) {
             return res.status(400).json({ message: 'Thiếu thông tin bình luận' });
         }
 
         await pool.query(
             'INSERT INTO BinhLuan (ma_tai_lieu, ma_nguoi_dung, noi_dung, ngay_binh_luan) VALUES (?, ?, ?, NOW())',
-            [ma_tai_lieu, userId, noi_dung]
+            [documentId, userId, noi_dung]
         );
 
+        console.log('✅ Comment created successfully:', { documentId, userId });
         res.json({ success: true, message: 'Bình luận thành công' });
     } catch (error) {
-        console.error('Create comment error:', error);
+        console.error('❌ Create comment error:', error);
+        console.error('Error details:', { message: error.message, stack: error.stack });
         res.status(500).json({ success: false, message: 'Lỗi server' });
     }
 };
@@ -58,7 +69,10 @@ exports.updateComment = async (req, res) => {
     try {
         const { id } = req.params;
         const { noi_dung } = req.body;
-        const userId = req.user.id;
+        const userId = req.user?.id || req.user?.ma_nguoi_dung;
+        
+        console.log('✏️ Update comment request:', { commentId: id, userId });
+        
         const { getSchemaPool } = require('../config/database');
         const pool = await getSchemaPool();
         
@@ -81,6 +95,7 @@ exports.updateComment = async (req, res) => {
             [noi_dung, id]
         );
 
+        console.log('✅ Comment updated successfully:', { commentId: id, userId });
         res.json({ success: true, message: 'Cập nhật bình luận thành công' });
     } catch (error) {
         console.error('Update comment error:', error);
@@ -92,8 +107,10 @@ exports.updateComment = async (req, res) => {
 exports.deleteComment = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.user.id;
-        const userRole = req.user.role;
+        const userId = req.user?.id || req.user?.ma_nguoi_dung;
+        const userRole = req.user?.role || req.user?.chuc_vu;
+        
+        console.log('🗑️ Delete comment request:', { commentId: id, userId, userRole });
         const { getSchemaPool } = require('../config/database');
         const pool = await getSchemaPool();
         
@@ -115,6 +132,7 @@ exports.deleteComment = async (req, res) => {
 
         await pool.query('DELETE FROM BinhLuan WHERE ma_binh_luan = ?', [id]);
 
+        console.log('✅ Comment deleted successfully:', { commentId: id, userId });
         res.json({ success: true, message: 'Xóa bình luận thành công' });
     } catch (error) {
         console.error('Delete comment error:', error);

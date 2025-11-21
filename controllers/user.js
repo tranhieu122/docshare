@@ -99,9 +99,14 @@ exports.getUserStats = async (req, res) => {
         const userId = req.user.ma_nguoi_dung;
         const pool = await getSchemaPool();
         
-        // Get document count
+        // Get document count and stats
         const [docs] = await pool.query(
-            'SELECT COUNT(*) as count FROM TaiLieu WHERE ma_nguoi_dung = ?',
+            `SELECT 
+                COUNT(*) as total_documents,
+                COALESCE(SUM(so_luot_xem), 0) as total_views,
+                COALESCE(SUM(so_luot_tai), 0) as total_downloads
+            FROM TaiLieu 
+            WHERE ma_nguoi_dung = ?`,
             [userId]
         );
 
@@ -111,16 +116,21 @@ exports.getUserStats = async (req, res) => {
             [userId]
         );
 
-        // Get rating count
-        const [ratings] = await pool.query(
-            'SELECT COUNT(*) as count FROM DanhGia WHERE ma_nguoi_dung = ?',
+        // Get average rating from user's documents
+        const [avgRating] = await pool.query(
+            `SELECT COALESCE(AVG(dg.diem_so), 0) as avg_rating
+            FROM DanhGia dg
+            JOIN TaiLieu t ON dg.ma_tai_lieu = t.ma_tai_lieu
+            WHERE t.ma_nguoi_dung = ?`,
             [userId]
         );
 
         res.json({
-            documents: docs[0].count,
-            comments: comments[0].count,
-            ratings: ratings[0].count
+            documents: docs[0].total_documents || 0,
+            views: docs[0].total_views || 0,
+            downloads: docs[0].total_downloads || 0,
+            comments: comments[0].count || 0,
+            rating: parseFloat(avgRating[0].avg_rating || 0).toFixed(1)
         });
     } catch (error) {
         console.error('Get stats error:', error);

@@ -7,8 +7,9 @@ const { authenticate, isAdmin } = require('../middleware/auth');
 router.get('/', categoryController.getAllCategories);
 router.get('/danhmuc', categoryController.getAllCategories); // Alias
 
-// Get all subjects
+// Get all subjects (prioritize before /:id to avoid conflict)
 router.get('/monhoc', categoryController.getAllSubjects);
+router.get('/subjects', categoryController.getAllSubjects); // Alias for frontend compatibility
 
 // Get category by ID
 router.get('/:id', categoryController.getCategoryById);

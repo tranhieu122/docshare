@@ -4,21 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Chi tiết tài liệu - DocShare">
+    <meta name="keywords" content="tài liệu học tập, chia sẻ tài liệu, sinh viên, đại học">
+    <meta name="author" content="DocShare Team">
     <title>Chi tiết tài liệu | DocShare</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-    </div>
-
     <!-- Notification Toast -->
     <div id="notificationToast" class="notification-toast">
         <span id="toastMessage"></span>
         <button onclick="closeToast()" class="toast-close">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Đang tải...</p>
     </div>
 
     <!-- Header -->
@@ -38,6 +40,14 @@
                 <a href="./list.html" class="nav-link">
                     <span class="nav-icon">🔍</span>
                     Khám phá
+                </a>
+                <a href="../features.html" class="nav-link">
+                    <span class="nav-icon">✨</span>
+                    Tính năng
+                </a>
+                <a href="../about.html" class="nav-link">
+                    <span class="nav-icon">ℹ️</span>
+                    Về chúng tôi
                 </a>
                 <div class="nav-buttons" id="authButtons">
                     <a href="../login.html" class="btn-login">
