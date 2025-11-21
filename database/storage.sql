@@ -60,8 +60,8 @@ CREATE TABLE FileStorage (
     INDEX idx_md5 (md5_hash),
     INDEX idx_mime_type (mime_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-ROW_FORMAT=COMPRESSED
-KEY_BLOCK_SIZE=8;
+  ROW_FORMAT=COMPRESSED
+  KEY_BLOCK_SIZE=8;
 
 -- =============================================
 -- Bảng FileVersions - Lưu các phiên bản file
